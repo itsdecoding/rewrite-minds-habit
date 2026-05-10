@@ -1894,6 +1894,7 @@ function setupEventListeners() {
     e.preventDefault();
     const name = document.getElementById('habit-name').value.trim();
     if (!name) return;
+    if (!_isPro && habits.length >= 3) { showUpgradeModal('habit_limit'); return; }
     const category = catInput.value.trim() || 'General';
     const frequency = freqSelect.value === 'custom'
       ? `custom_${document.getElementById('custom-frequency-number').value}_${document.getElementById('custom-frequency-unit').value}`
@@ -3552,6 +3553,7 @@ const SUPA_URL = 'https://xahbsrfpgqlryzxdsezk.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhaGJzcmZwZ3Fscnl6eGRzZXprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMjYyNDgsImV4cCI6MjA5MzkwMjI0OH0.TKnQ97FAWJV4YQkr_NiKspVFD7VUyxHPgDOYnqdiSZM';
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let _currentUser = null;
+let _isPro = false;
 
 // ── CLOUD SYNC HELPERS ────────────────────────
 function setSyncStatus(state) {
@@ -3791,6 +3793,7 @@ async function cloudLoadHabits() {
       if(sub) sub.textContent = 'Welcome back, ' + name + '! 👋';
       // Load cloud data
       await cloudLoadHabits();
+      await checkProStatus();
     }, 320);
   }
 
@@ -3798,6 +3801,7 @@ async function cloudLoadHabits() {
     if (!confirm('Sign out of HabitMaster?')) return;
     await _supa.auth.signOut();
     _currentUser = null;
+    _isPro = false;
     document.getElementById('app-shell').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
     authTab('login');
@@ -3820,6 +3824,52 @@ async function cloudLoadHabits() {
     _toastT = setTimeout(()=>{ t.style.transform='translateX(-50%) translateY(80px)'; }, 2800);
   };
 
+  // ── PRO STATUS CHECK ──
+  window.checkProStatus = async function() {
+    if (!_currentUser) return;
+    try {
+      const { data } = await _supa
+        .from('profiles')
+        .select('is_pro')
+        .eq('id', _currentUser.id)
+        .single();
+      _isPro = data?.is_pro || false;
+      updateProUI();
+    } catch(e) { _isPro = false; }
+  };
+
+  function updateProUI() {
+    const badge = document.getElementById('pro-status-badge');
+    if (badge) {
+      badge.textContent = _isPro ? '⭐ Pro' : '🆓 Free';
+      badge.style.background = _isPro ? 'linear-gradient(135deg,#f7c04a,#f79c4a)' : 'rgba(107,114,128,0.15)';
+      badge.style.color = _isPro ? '#1a1000' : 'var(--muted)';
+    }
+    // Show/hide upgrade banner
+    const banner = document.getElementById('free-limit-banner');
+    if (banner) banner.style.display = (!_isPro && habits.length >= 3) ? 'flex' : 'none';
+  }
+
+  // ── UPGRADE MODAL ──
+  window.showUpgradeModal = function(reason) {
+    const modal = document.getElementById('upgrade-modal');
+    if (!modal) return;
+    const msg = document.getElementById('upgrade-modal-msg');
+    if (msg) {
+      if (reason === 'habit_limit') msg.textContent = "You've reached the 3 habit limit on the Free plan. Upgrade to Pro for unlimited habits!";
+      else msg.textContent = 'This feature is available on the Pro plan.';
+    }
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+  };
+
+  window.closeUpgradeModal = function() {
+    const modal = document.getElementById('upgrade-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+  };
+
   // ── Check for existing session on page load ──
   (async function checkSession(){
     const { data: { session } } = await _supa.auth.getSession();
@@ -3831,6 +3881,7 @@ async function cloudLoadHabits() {
       const sub = document.getElementById('tb-sub');
       if(sub) sub.textContent = 'Welcome back, ' + name + '! 👋';
       await cloudLoadHabits();
+      await checkProStatus();
     } else {
       setSyncStatus('local');
     }
@@ -3851,5 +3902,70 @@ async function cloudLoadHabits() {
 
 })();
 </script>
+<!-- ── UPGRADE MODAL ─────────────────────────────── -->
+<div id="upgrade-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;" onclick="if(event.target===this)closeUpgradeModal()">
+<div style="background:var(--surface);border-radius:24px;padding:32px 24px;max-width:380px;width:92%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.4);">
+  <button onclick="closeUpgradeModal()" style="position:absolute;top:16px;right:16px;background:var(--surface2);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--muted);">✕</button>
+  <div style="text-align:center;margin-bottom:20px;">
+    <div style="font-size:40px;margin-bottom:8px;">⭐</div>
+    <h2 style="font-size:1.4rem;font-weight:800;margin:0 0 6px;">Unlock Your Full Potential</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin:0;" id="upgrade-modal-msg">Upgrade to Pro for unlimited access.</p>
+  </div>
+
+  <!-- Free limit banner -->
+  <div id="free-limit-banner" style="display:none;background:rgba(247,156,74,0.1);border:1px solid rgba(247,156,74,0.3);border-radius:12px;padding:10px 14px;margin-bottom:16px;align-items:center;gap:10px;font-size:.82rem;color:#f79c4a;">
+    <span>🔒</span><span>You're using <strong>3/3 free habits</strong></span>
+  </div>
+
+  <!-- Pricing cards -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+    <div style="border:2px solid var(--border);border-radius:16px;padding:16px;text-align:center;">
+      <div style="font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.05em;margin-bottom:6px;">MONTHLY</div>
+      <div style="font-size:1.6rem;font-weight:800;">$4.99</div>
+      <div style="font-size:.75rem;color:var(--muted);">per month</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px;">Cancel anytime</div>
+    </div>
+    <div style="border:2px solid var(--accent);border-radius:16px;padding:16px;text-align:center;position:relative;background:var(--accent-soft);">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:20px;">BEST VALUE</div>
+      <div style="font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.05em;margin-bottom:6px;">YEARLY</div>
+      <div style="font-size:1.6rem;font-weight:800;">$2.99</div>
+      <div style="font-size:.75rem;color:var(--muted);">per month</div>
+      <div style="font-size:.72rem;color:var(--accent);margin-top:4px;">Save 40% · $35/yr</div>
+    </div>
+  </div>
+
+  <!-- Lifetime -->
+  <div style="background:linear-gradient(135deg,#6c4af7,#9d4af7);border-radius:16px;padding:18px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:12px;right:12px;background:rgba(255,200,0,0.9);color:#1a1000;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:20px;">🔥 LIMITED</div>
+    <div style="color:#fff;font-weight:700;font-size:1rem;margin-bottom:2px;">Lifetime Access</div>
+    <div style="color:rgba(255,255,255,0.7);font-size:.78rem;margin-bottom:10px;">One-time payment, yours forever</div>
+    <div style="color:#fff;font-size:2rem;font-weight:800;">$49<span style="font-size:1rem;font-weight:400;opacity:.7;"> once</span></div>
+    <button onclick="window.open('YOUR_LIFETIME_LINK','_blank')" style="margin-top:12px;width:100%;padding:12px;background:#fff;color:#6c4af7;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;">Claim Lifetime →</button>
+  </div>
+
+  <!-- CTA Buttons -->
+  <button onclick="window.open('YOUR_MONTHLY_LINK','_blank')" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:14px;font-weight:700;font-size:1rem;cursor:pointer;margin-bottom:8px;">Upgrade to Pro · $4.99/mo</button>
+  <button onclick="window.open('YOUR_YEARLY_LINK','_blank')" style="width:100%;padding:14px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);border-radius:14px;font-weight:700;font-size:.95rem;cursor:pointer;margin-bottom:16px;">Upgrade Yearly · $35/yr (Save 40%)</button>
+
+  <!-- Free vs Pro -->
+  <div style="border-top:1px solid var(--border);padding-top:16px;">
+    <div style="font-weight:700;font-size:.85rem;margin-bottom:10px;text-align:center;">Free vs Pro</div>
+    <div style="display:grid;gap:6px;font-size:.8rem;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Habits</span><span><span style="color:var(--muted);">3</span> → <strong style="color:var(--accent);">Unlimited</strong></span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Cloud Sync</span><span><span style="color:var(--muted);">✓</span> → <strong style="color:var(--accent);">✓</strong></span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Analytics</span><span><span style="color:#dc3545;">✗</span> → <strong style="color:var(--accent);">✓</strong></span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Journal</span><span><span style="color:#dc3545;">✗</span> → <strong style="color:var(--accent);">✓</strong></span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Heatmap</span><span><span style="color:#dc3545;">✗</span> → <strong style="color:var(--accent);">✓</strong></span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Pro Badge</span><span><span style="color:#dc3545;">✗</span> → <strong style="color:var(--accent);">✓</strong></span></div>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:.72rem;color:var(--muted);margin:12px 0 0;">14-day money-back guarantee · Cancel anytime</p>
+</div>
+</div>
+
+<style>
+#upgrade-modal.show { opacity: 1 !important; }
+</style>
+
 </body>
 </html>
