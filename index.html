@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07070F" id="metaThemeColor" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LifeFlow" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>LifeFlow</title>
+  <!-- BUG FIX: Instant theme restore prevents flash of wrong theme on load -->
+  <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('lf_theme') || 'dark';
+        var eff = t === 'system' ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : t;
+        document.documentElement.dataset.theme = eff;
+      } catch(e) {}
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#07070F;
+      --surface:#10101E;
+      --surface2:#181828;
+      --surface3:#1F1F35;
+      --primary:#7B5EA7;
+      --primary-bright:#9D7FD4;
+      --primary-glow:rgba(123,94,167,.25);
+      --gold:#F0C040;
+      --gold-glow:rgba(240,192,64,.2);
+      --emerald:#2DD4A0;
+      --emerald-glow:rgba(45,212,160,.2);
+      --coral:#FF6B6B;
+      --text:#EEEEF5;
+      --muted:#7A7A99;
+      --inactive:#3A3A55;
+      --border:rgba(255,255,255,.06);
+      --glass:rgba(255,255,255,.04);
+      --nav:88px;
+      --pad:16px;
+      --radius:22px;
+      --shadow:0 8px 32px rgba(0,0,0,.34);
+      --shadow-lg:0 18px 60px rgba(0,0,0,.44);
+      color-scheme:dark;
+      font-family:"DM Sans", system-ui, sans-serif;
+    }
+    [data-theme="light"]{
+      --bg:#F5F3EE;
+      --surface:#FFFFFF;
+      --surface2:#F8F7F4;
+      --surface3:#F1EEEA;
+      --primary:#6F52B5;
+      --primary-bright:#8B6ED1;
+      --primary-glow:rgba(111,82,181,.16);
+      --gold:#D29A1A;
+      --gold-glow:rgba(210,154,26,.18);
+      --emerald:#12B886;
+      --emerald-glow:rgba(18,184,134,.18);
+      --coral:#E45858;
+      --text:#151320;
+      --muted:#625D73;
+      --inactive:#8B839C;
+      --border:rgba(41,35,66,.10);
+      --glass:rgba(255,255,255,.92);
+      color-scheme:light;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+    body{
+      min-height:100vh;min-height:100dvh;overflow:hidden;
+      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    }
+    body:before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.18;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode:screen;
+    }
+    [data-theme="light"] body:before{opacity:.08;mix-blend-mode:multiply;}
+    button,input,textarea,select{font:inherit}
+    button{border:0;background:none;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    input,textarea,select{
+      width:100%;min-height:48px;padding:12px 13px;border-radius:14px;
+      border:1px solid var(--border);background:var(--surface3);color:var(--text);outline:none;
+    }
+    [data-theme="light"] input,
+    [data-theme="light"] textarea,
+    [data-theme="light"] select{background:var(--surface2);border-color:var(--border);}
+    textarea{min-height:120px;resize:vertical}
+    a{color:inherit;text-decoration:none}
+    .app{
+      position:relative;z-index:1;width:100%;max-width:560px;height:100vh;height:100dvh;
+      margin:0 auto;overflow:hidden;background:
+        radial-gradient(ellipse at 18% 10%, rgba(123,94,167,.18) 0%, transparent 45%),
+        radial-gradient(ellipse at 86% 8%, rgba(45,212,160,.08) 0%, transparent 38%),
+        var(--bg);
+      border-left:1px solid rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.03);
+    }
+    [data-theme="light"] .app{
+      background:
+        radial-gradient(ellipse at 18% 10%, rgba(111,82,181,.12) 0%, transparent 44%),
+        radial-gradient(ellipse at 86% 8%, rgba(18,184,134,.06) 0%, transparent 38%),
+        var(--bg);
+      border-left:1px solid rgba(41,35,66,.06);
+      border-right:1px solid rgba(41,35,66,.06);
+    }
+    .screen{
+      position:absolute;inset:0 0 var(--nav);overflow:auto;padding-top:96px;padding-bottom:24px;display:none;
+      scrollbar-width:none;animation:screenIn .24s ease both;
+    }
+    .screen::-webkit-scrollbar{display:none}
+    .screen.active{display:block}
+    @keyframes screenIn{from{opacity:0;transform:translate3d(16px,0,0)}to{opacity:1;transform:none}}
+    .topbar{
+      min-height:82px;padding:18px var(--pad) 10px;display:grid;grid-template-columns:44px 1fr auto auto;align-items:center;gap:10px;
+      position:sticky;top:0;z-index:20;
+      background:linear-gradient(180deg, rgba(7,7,15,.98), rgba(7,7,15,.72) 78%, transparent);
+      backdrop-filter:blur(14px);
+    }
+    [data-theme="light"] .topbar{
+      background:linear-gradient(180deg, rgba(245,243,238,.98), rgba(245,243,238,.72) 78%, transparent);
+    }
+    .title{font-size:clamp(24px, 7vw, 34px);font-weight:800;letter-spacing:-.03em;line-height:1.02}
+    .subtitle{color:var(--muted);font-size:12px;margin-top:4px}
+    .icon-btn{
+      width:44px;height:44px;border-radius:15px;display:grid;place-items:center;color:var(--muted);
+      background:rgba(255,255,255,.02);border:1px solid transparent;
+    }
+    [data-theme="light"] .icon-btn{background:rgba(20,16,35,.04);}
+    .icon-btn.hot{color:var(--primary-bright);border-color:var(--border);background:var(--glass)}
+    .avatar{
+      width:42px;height:42px;border-radius:999px;display:grid;place-items:center;font-weight:900;color:#07070F;
+      background:linear-gradient(135deg, var(--gold), var(--primary-bright));box-shadow:0 0 0 3px rgba(240,192,64,.12)
+    }
+    .icon{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+    .fill{fill:currentColor;stroke:none}
+    .content{padding:0 var(--pad)}
+    .glass{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);box-shadow:var(--shadow)}
+    .hero-card{
+      border-radius:24px;padding:18px;background:
+        radial-gradient(circle at 12% 0%, rgba(123,94,167,.24), transparent 42%),
+        radial-gradient(circle at 92% 12%, rgba(240,192,64,.14), transparent 34%),
+        var(--glass);border:1px solid var(--border);box-shadow:0 12px 44px rgba(0,0,0,.34)
+    }
+    [data-theme="light"] .hero-card{box-shadow:0 4px 24px rgba(30,24,48,.1);}
+    .eyebrow{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800}
+    .hero-title{font-size:24px;font-weight:900;letter-spacing:-.03em;margin-top:8px;line-height:1.05}
+    .micro{color:var(--muted);font-size:12px;line-height:1.5}
+    .summary-row{
+      display:grid;grid-auto-flow:column;grid-auto-columns:minmax(156px,1fr);gap:12px;overflow:auto;margin:18px 0 20px;
+      scrollbar-width:none
+    }
+    .summary-row::-webkit-scrollbar{display:none}
+    .summary{
+      min-height:122px;border-radius:20px;padding:15px;position:relative;overflow:hidden
+    }
+    .summary:after{content:"";position:absolute;inset:auto -32px -34px auto;width:98px;height:98px;border-radius:50%;background:var(--primary-glow);filter:blur(3px)}
+    .stat{margin-top:10px;font-size:26px;font-weight:900;letter-spacing:-.02em}
+    .progress-ring{
+      width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+      background:conic-gradient(var(--primary-bright) var(--pct,0%), rgba(255,255,255,.08) 0);color:var(--text);font-size:11px;font-weight:900;margin-top:12px;position:relative
+    }
+    .progress-ring:before{content:"";position:absolute;width:34px;height:34px;border-radius:50%;background:var(--surface2)}
+    .progress-ring span{position:relative;z-index:1}
+    .section-title{margin:22px 0 12px;font-size:18px;font-weight:850;letter-spacing:-.02em}
+    .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .action{
+      min-height:98px;border-radius:20px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;color:var(--text)
+    }
+    .action-icon{
+      width:44px;height:44px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg, var(--primary), #42418e);box-shadow:0 0 24px rgba(123,94,167,.22)
+    }
+    .action span:last-child{font-size:12px;font-weight:800}
+    .chip-row{display:flex;gap:10px;overflow:auto;scrollbar-width:none}
+    .chip-row::-webkit-scrollbar{display:none}
+    .chip{
+      flex:0 0 auto;border-radius:999px;padding:10px 13px;display:flex;align-items:center;gap:10px;color:var(--text);
+      background:rgba(255,255,255,.045);border:1px solid var(--border)
+    }
+    [data-theme="light"] .chip{background:rgba(20,16,35,.05);}
+    .dot{width:9px;height:9px;border-radius:50%;background:var(--primary-bright);box-shadow:0 0 12px currentColor}
+    .list{display:grid;gap:12px}
+    .item{
+      border-radius:20px;padding:14px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+      background:var(--glass);border:1px solid var(--border)
+    }
+    .check{
+      width:34px;height:34px;border-radius:50%;border:1.5px solid var(--inactive);display:grid;place-items:center;color:#07070F;flex-shrink:0
+    }
+    .check.done{background:var(--emerald);border-color:var(--emerald);box-shadow:0 0 22px var(--emerald-glow)}
+    .item-title{font-weight:850}
+    .done-text{color:var(--muted);text-decoration:line-through}
+    .meta{color:var(--muted);font-size:12px;margin-top:5px;display:flex;flex-wrap:wrap;gap:8px}
+    .pill{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.045);color:var(--muted);font-size:12px;font-weight:750}
+    [data-theme="light"] .pill{background:rgba(20,16,35,.06);}
+    .bottom-nav{
+      position:absolute;left:0;right:0;bottom:0;height:var(--nav);padding:10px 18px calc(10px + env(safe-area-inset-bottom));
+      display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:rgba(16,16,30,.96);border-top:1px solid var(--border);backdrop-filter:blur(22px);z-index:50
+    }
+    [data-theme="light"] .bottom-nav{background:rgba(255,255,255,.94);border-top:1px solid rgba(41,35,66,.08);}
+    .tab{position:relative;color:var(--inactive);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0}
+    .tab:before{content:"";width:34px;height:5px;border-radius:999px;background:transparent;transform:translateY(-8px)}
+    .tab.active{color:var(--primary-bright)}
+    .tab.active:before{background:var(--primary-bright);box-shadow:0 0 18px var(--primary-glow)}
+    .tab span:last-child{display:none;color:var(--text);font-size:11px;font-weight:800}
+    .tab.active span:last-child{display:block}
+    [data-theme="light"] .tab{color:#8e87a0;}
+    [data-theme="light"] .tab.active{color:var(--primary-bright);}
+    .fab{
+      position:absolute;right:18px;bottom:calc(var(--nav) + 18px);width:64px;height:64px;border-radius:22px;display:grid;place-items:center;z-index:45;
+      background:linear-gradient(135deg, var(--primary-bright), var(--primary));box-shadow:0 0 28px rgba(123,94,167,.42), 0 18px 40px rgba(0,0,0,.42)
+    }
+    .drawer-backdrop,.sheet-backdrop,.auth-backdrop,.onb-backdrop{
+      position:absolute;inset:0;opacity:0;pointer-events:none;background:rgba(0,0,0,.58);transition:.22s ease;z-index:80
+    }
+    .drawer-backdrop.open,.sheet-backdrop.open,.auth-backdrop.open,.onb-backdrop.open{opacity:1;pointer-events:auto}
+    .drawer{
+      position:absolute;inset:0 auto 0 0;width:min(84vw,350px);padding:22px 16px;
+      background:rgba(16,16,30,.96);backdrop-filter:blur(24px);
+      border-right:1px solid var(--border);box-shadow:0 24px 60px rgba(0,0,0,.52);
+      transform:translateX(-105%);transition:.34s cubic-bezier(.2,1.1,.2,1);z-index:90;overflow:auto
+    }
+    [data-theme="light"] .drawer{
+      background:rgba(255,255,255,.97);
+      border-right:1px solid rgba(41,35,66,.08);
+      box-shadow:0 18px 42px rgba(30,24,48,.12);
+    }
+    .drawer.open{transform:none}
+    .user-card{display:flex;gap:12px;align-items:center;padding:14px;border-radius:22px;margin-bottom:16px}
+    .drawer-item{
+      width:100%;min-height:48px;display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:0 12px;border-radius:16px;color:var(--text);text-align:left;font-weight:780
+    }
+    [data-theme="light"] .drawer-item{color:#1D1A2A;}
+    .drawer-item.active{background:var(--primary-glow);box-shadow:inset 3px 0 0 var(--primary-bright)}
+    [data-theme="light"] .drawer-item.active{background:rgba(111,82,181,.14);}
+    .drawer-item .badge{color:var(--gold);background:rgba(240,192,64,.12);padding:4px 8px;border-radius:99px;font-size:11px}
+    .divider{height:1px;background:var(--border);margin:12px 8px}
+    [data-theme="light"] .divider{background:rgba(41,35,66,.08);}
+    .sheet{
+      position:absolute;left:0;right:0;bottom:0;max-height:88dvh;transform:translateY(106%);
+      transition:.28s cubic-bezier(.2,1,.2,1);z-index:100;
+      background:rgba(16,16,30,.98);border:1px solid var(--border);border-radius:24px 24px 0 0;
+      box-shadow:0 -22px 70px rgba(0,0,0,.55);overflow:hidden
+    }
+    [data-theme="light"] .sheet{background:rgba(255,255,255,.99);}
+    .sheet.open{transform:none}
+    .grab{width:44px;height:5px;border-radius:99px;background:rgba(255,255,255,.16);margin:9px auto 0}
+    [data-theme="light"] .grab{background:rgba(0,0,0,.14);}
+    .sheet-head{min-height:60px;padding:8px 18px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+    .sheet-title{flex:1;font-size:20px;font-weight:900;letter-spacing:-.02em}
+    .sheet-body{padding:18px;overflow:auto;max-height:calc(88dvh - 74px)}
+    .form{display:grid;gap:14px}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .primary,.secondary,.danger{min-height:52px;border-radius:14px;font-weight:900}
+    .primary{background:linear-gradient(135deg, var(--primary-bright), var(--primary));color:#fff;box-shadow:0 0 22px rgba(123,94,167,.24)}
+    /* BUG FIX: secondary was nearly invisible in light mode (rgba(255,255,255,.06)) */
+    .secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+    [data-theme="light"] .secondary{background:rgba(20,16,35,.07);border-color:rgba(41,35,66,.12);}
+    .danger{color:var(--coral);background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.14)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+    .section-card{border-radius:20px;padding:16px;border:1px solid var(--border);background:var(--glass);box-shadow:var(--shadow)}
+    .empty{
+      min-height:calc(100dvh - 260px - var(--nav));display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px 14px
+    }
+    .empty h2{margin:0 0 8px;font-size:22px;letter-spacing:-.02em}
+    .empty p{margin:0;max-width:300px;color:var(--muted);line-height:1.45}
+    .moods{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
+    .mood{
+      flex:0 0 auto;border-radius:999px;padding:10px 12px;background:rgba(255,255,255,.045);border:1px solid var(--border);font-size:13px;font-weight:800
+    }
+    [data-theme="light"] .mood{background:rgba(20,16,35,.05);}
+    .mood.active{background:var(--primary-glow);color:var(--primary-bright)}
+    .heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .heat{aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+    [data-theme="light"] .heat{background:rgba(20,16,35,.05);}
+    .heat.level-1{background:rgba(123,94,167,.20)}
+    .heat.level-2{background:rgba(123,94,167,.35)}
+    .heat.level-3{background:rgba(123,94,167,.55)}
+    .heat.level-4{background:rgba(45,212,160,.55)}
+    .timer-box{
+      border-radius:24px;padding:18px;background:
+        radial-gradient(circle at 12% 0%, rgba(123,94,167,.24), transparent 42%),
+        radial-gradient(circle at 92% 12%, rgba(240,192,64,.14), transparent 34%),
+        var(--glass);border:1px solid var(--border);box-shadow:0 12px 44px rgba(0,0,0,.34)
+    }
+    .timer-time{font-size:clamp(44px, 14vw, 64px);font-weight:900;letter-spacing:-.05em;text-align:center;margin:8px 0 6px}
+    .timer-mode{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
+    .mode-pill{
+      flex:0 0 auto;padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid var(--border);font-weight:800;font-size:13px
+    }
+    [data-theme="light"] .mode-pill{background:rgba(20,16,35,.05);}
+    .mode-pill.active{background:var(--primary-glow);color:var(--primary-bright)}
+    .audio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .audio-btn{min-height:76px;border-radius:18px;padding:14px;text-align:left;background:var(--glass);border:1px solid var(--border)}
+    .audio-btn.active{outline:2px solid var(--primary-bright)}
+    .auth-screen,.onboarding-screen{
+      position:fixed;inset:0;z-index:9000;display:none;overflow:hidden;background:
+        radial-gradient(circle at 18% 10%, rgba(123,94,167,.16), transparent 32%),
+        radial-gradient(circle at 82% 18%, rgba(45,212,160,.08), transparent 28%),
+        var(--bg)
+    }
+    [data-theme="light"] .auth-screen,[data-theme="light"] .onboarding-screen{
+      background:
+        radial-gradient(circle at 18% 10%, rgba(111,82,181,.08), transparent 32%),
+        radial-gradient(circle at 82% 18%, rgba(18,184,134,.06), transparent 28%),
+        var(--bg);
+    }
+    .auth-screen.open,.onboarding-screen.open{display:block}
+    .auth-wrap,.onb-wrap{
+      position:relative;z-index:1;max-width:560px;height:100%;margin:0 auto;padding:18px 18px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center
+    }
+    .auth-card,.onb-card{
+      border-radius:28px;padding:20px;background:
+        radial-gradient(circle at 12% 0%, rgba(123,94,167,.24), transparent 42%),
+        radial-gradient(circle at 92% 12%, rgba(240,192,64,.14), transparent 34%),
+        var(--glass);border:1px solid var(--border);box-shadow:var(--shadow-lg)
+    }
+    .brand-badge{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--border);
+      color:var(--gold);font-weight:800;font-size:12px
+    }
+    .auth-logo{font-size:34px;font-weight:900;letter-spacing:-.04em;margin-top:14px}
+    .auth-tagline{color:var(--muted);line-height:1.5;margin:8px 0 0}
+    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+    .auth-tab{min-height:48px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--border);font-weight:900}
+    [data-theme="light"] .auth-tab{background:rgba(20,16,35,.04);}
+    .auth-tab.active{background:var(--primary);color:white;border-color:transparent}
+    .auth-field{margin-top:12px}
+    .auth-lbl{display:block;margin:0 0 7px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .auth-input-wrap{position:relative}
+    .auth-input{padding-left:42px}
+    .auth-input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.8}
+    .auth-err{
+      display:none;margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.22);color:var(--coral);font-weight:700;font-size:13px
+    }
+    .auth-cta,.auth-google{width:100%;min-height:52px;border-radius:16px;font-weight:900}
+    .auth-cta{margin-top:14px;background:linear-gradient(135deg, var(--primary-bright), var(--primary));box-shadow:0 0 22px rgba(123,94,167,.24);color:white}
+    .auth-google{margin-top:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text)}
+    [data-theme="light"] .auth-google{background:rgba(20,16,35,.05);}
+    .auth-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+    .auth-chip{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--border);font-size:12px;font-weight:800}
+    [data-theme="light"] .auth-chip{background:rgba(20,16,35,.04);}
+    .onb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .onb-top{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .onb-brand{font-weight:900}
+    .onb-cta{min-height:52px;border-radius:16px;background:linear-gradient(135deg, var(--primary-bright), var(--primary));color:white;font-weight:900;width:100%;margin-top:16px}
+    .onb-track{display:flex;gap:8px;margin:14px 0}
+    .onb-dot{height:8px;flex:1;border-radius:999px;background:rgba(255,255,255,.10)}
+    [data-theme="light"] .onb-dot{background:rgba(20,16,35,.10);}
+    .onb-dot.active{background:var(--primary-bright)}
+    .onb-slide{display:none;animation:screenIn .24s ease both}
+    .onb-slide.active{display:block}
+    .onb-art{
+      height:220px;border-radius:24px;background:
+        radial-gradient(circle at 50% 38%, rgba(123,94,167,.32), transparent 34%),
+        radial-gradient(circle at 30% 20%, rgba(240,192,64,.18), transparent 18%),
+        radial-gradient(circle at 70% 70%, rgba(45,212,160,.12), transparent 20%),
+        rgba(255,255,255,.03);
+      border:1px solid var(--border);display:grid;place-items:center;margin-bottom:16px
+    }
+    .onb-title{font-size:28px;font-weight:900;letter-spacing:-.03em;line-height:1.05;margin:0 0 10px}
+    .onb-text{margin:0;color:var(--muted);line-height:1.55}
+    .toast{
+      position:fixed;left:50%;bottom:calc(var(--nav) + 16px);transform:translateX(-50%) translateY(150px);opacity:0;
+      background:rgba(14,14,23,.96);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:16px;z-index:9999;transition:transform .28s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;box-shadow:var(--shadow-lg);font-weight:800;white-space:nowrap;max-width:calc(100vw - 40px);text-overflow:ellipsis;overflow:hidden;pointer-events:none;
+    }
+    [data-theme="light"] .toast{background:rgba(255,255,255,.98);box-shadow:0 8px 32px rgba(30,24,48,.18);}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto;}
+    .sync-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--border);font-size:12px;font-weight:800;color:var(--muted)}
+    [data-theme="light"] .sync-pill{background:rgba(20,16,35,.04);}
+    .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+    .sync-dot.synced{background:var(--emerald);box-shadow:0 0 10px var(--emerald-glow)}
+    .sync-dot.syncing{background:var(--gold);box-shadow:0 0 10px var(--gold-glow)}
+    .small{font-size:12px;color:var(--muted)}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .gap{height:12px}
+    .muted{color:var(--muted)}
+    .hidden{display:none !important}
+
+    /* ── UPGRADE MODAL ─────────────────────────────────────────── */
+    .upgrade-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.64);z-index:8500;opacity:0;pointer-events:none;transition:.22s ease
+    }
+    .upgrade-backdrop.open{opacity:1;pointer-events:auto}
+    .upgrade-modal{
+      position:fixed;left:0;right:0;bottom:0;max-height:94dvh;transform:translateY(110%);
+      transition:.34s cubic-bezier(.2,1,.2,1);z-index:8600;
+      background:var(--surface);border:1px solid var(--border);border-radius:28px 28px 0 0;
+      box-shadow:0 -24px 80px rgba(0,0,0,.6);overflow-y:auto;
+      scrollbar-width:none;max-width:560px;margin:0 auto
+    }
+    .upgrade-modal::-webkit-scrollbar{display:none}
+    .upgrade-modal.open{transform:none}
+    .upgrade-head{min-height:60px;padding:8px 18px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+    .upgrade-body{padding:20px 18px 40px}
+    .upgrade-hero{text-align:center;padding:10px 0 22px}
+    .upgrade-hero-icon{font-size:52px;line-height:1}
+    .upgrade-hero-title{font-size:22px;font-weight:900;letter-spacing:-.03em;margin-top:14px}
+    .upgrade-hero-sub{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.5}
+    .upgrade-features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px}
+    .upgrade-feat{font-size:12px;font-weight:700;padding:9px 11px;border-radius:12px;background:var(--glass);border:1px solid var(--border);display:flex;align-items:center;gap:6px}
+    .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .plan-card{
+      border-radius:20px;padding:16px 10px;border:1px solid var(--border);background:var(--glass);
+      text-align:center;cursor:pointer;transition:.2s ease;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center
+    }
+    .plan-card:hover{border-color:var(--primary-bright);transform:translateY(-3px);box-shadow:0 12px 36px rgba(123,94,167,.18)}
+    .plan-card:active{transform:none}
+    .plan-featured{
+      border-color:var(--gold) !important;
+      background:linear-gradient(160deg,rgba(240,192,64,.1),rgba(123,94,167,.08));
+      box-shadow:0 0 32px rgba(240,192,64,.12)
+    }
+    .plan-badge{
+      position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,var(--gold),#D4A017);color:#07070F;
+      font-size:9px;font-weight:900;padding:3px 10px;border-radius:0 0 10px 10px;letter-spacing:.04em;white-space:nowrap
+    }
+    .plan-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:14px}
+    .plan-price{font-size:26px;font-weight:900;letter-spacing:-.03em;margin:6px 0 2px;color:var(--text)}
+    .plan-period{font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.3}
+    .plan-cta{
+      width:100%;min-height:34px;border-radius:10px;font-weight:900;font-size:12px;
+      background:linear-gradient(135deg,var(--primary-bright),var(--primary));color:white;border:0;cursor:pointer;
+      transition:.16s ease;flex-shrink:0
+    }
+    .plan-cta:hover{opacity:.88}
+    .plan-featured .plan-cta{background:linear-gradient(135deg,var(--gold),#C49012);color:#07070F}
+    .upgrade-guarantee{text-align:center;font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+    /* ── SETTINGS EXTRAS ───────────────────────────────────────── */
+    .settings-toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+    .toggle-switch{width:44px;height:24px;border-radius:999px;background:var(--inactive);position:relative;cursor:pointer;transition:.2s ease;border:0;flex-shrink:0}
+    .toggle-switch.on{background:var(--emerald)}
+    .toggle-switch:before{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s ease}
+    .toggle-switch.on:before{transform:translateX(20px)}
+    .pro-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,rgba(240,192,64,.18),rgba(123,94,167,.14));border:1px solid rgba(240,192,64,.28);font-size:11px;font-weight:900;color:var(--gold)}
+
+    /* ── RESPONSIVE DESKTOP LAYOUT ───────────────────────────── */
+    @media (min-width: 760px) {
+      html, body { width:100%;height:100%;overflow:hidden; }
+      .auth-wrap, .onb-wrap { max-width:none;padding:32px;align-items:center;justify-content:center; }
+      .auth-card, .onb-card { width:min(980px, 92vw);padding:28px; }
+      .auth-card { display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center; }
+      .auth-logo { font-size:clamp(38px, 4vw, 62px); }
+      .auth-meta { grid-column:1 / -1; }
+      .app {
+        max-width:none;width:100vw;display:grid;
+        grid-template-columns:280px minmax(0, 1fr);
+        grid-template-rows:96px minmax(0, 1fr);
+        border:0;
+      }
+      .drawer {
+        position:relative;left:auto;top:auto;bottom:auto;width:100%;height:100%;
+        transform:none !important;grid-column:1;grid-row:1 / span 2;
+        border-right:1px solid var(--border);
+        background:rgba(16, 16, 30, .92);
+      }
+      /* BUG FIX: light theme must override the desktop drawer background */
+      [data-theme="light"] .drawer {
+        background:rgba(255,255,255,.97);
+      }
+      .drawer-backdrop, .sheet-backdrop { display:none !important; }
+      .topbar {
+        position:relative;grid-column:2;grid-row:1;min-height:96px;padding:18px 28px 14px;
+        background:linear-gradient(180deg, rgba(7,7,15,.96), rgba(7,7,15,.78) 74%, transparent);
+      }
+      /* BUG FIX: light theme must override desktop topbar background */
+      [data-theme="light"] .topbar {
+        background:linear-gradient(180deg, rgba(245,243,238,.98), rgba(245,243,238,.78) 74%, transparent);
+      }
+      .screen {
+        position:relative;inset:auto;grid-column:2;grid-row:2;
+        height:auto;min-height:0;overflow:auto;padding-top:0;padding-bottom:34px;
+      }
+      .content { max-width:1200px;padding:0 28px 28px;margin:0 auto; }
+      .bottom-nav { display:none; }
+      .fab { position:fixed;right:28px;bottom:28px; }
+      .summary-row { grid-auto-columns:minmax(180px, 1fr); }
+      .actions { grid-template-columns:repeat(4, 1fr); }
+      .audio-grid { grid-template-columns:repeat(3, 1fr); }
+      #achievementsGrid { grid-template-columns:repeat(3, 1fr) !important; }
+      .upgrade-features { grid-template-columns:repeat(3,1fr); }
+      .sheet {
+        left:auto;right:24px;bottom:24px;width:min(720px, calc(100vw - 340px));
+        max-height:calc(100vh - 120px);border-radius:24px;
+      }
+      .sheet-body { max-height:calc(100vh - 196px); }
+      .upgrade-modal {
+        left:auto;right:0;bottom:0;width:min(560px,100vw);
+        border-radius:28px 28px 0 0;
+      }
+      .plans { gap:12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH SCREEN -->
+  <div class="auth-screen open" id="authScreen">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="brand-badge">✦ LifeFlow</div>
+        <div class="auth-logo">Build your rhythm.</div>
+        <p class="auth-tagline">Habits, focus, reflection, and goals — all synced to your account.</p>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="loginTab" onclick="setAuthTab('login')">Sign In</button>
+          <button class="auth-tab" id="signupTab" onclick="setAuthTab('signup')">Create Account</button>
+        </div>
+        <div class="auth-field" id="nameField" style="display:none">
+          <label class="auth-lbl">Your Name</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">👤</span>
+            <input id="nameInput" class="auth-input" type="text" placeholder="Your name">
+          </div>
+        </div>
+        <div class="auth-field">
+          <label class="auth-lbl">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input id="emailInput" class="auth-input" type="email" placeholder="you@example.com" autocomplete="email">
+          </div>
+        </div>
+        <div class="auth-field">
+          <label class="auth-lbl">Password</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input id="passwordInput" class="auth-input" type="password" placeholder="Min. 6 characters" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="auth-err" id="authError"></div>
+        <button class="auth-cta" onclick="submitAuth()" id="authBtn">Sign In</button>
+        <button class="auth-google" onclick="authToast('Google sign-in can be added later.')">Continue with Google</button>
+        <div class="auth-meta">
+          <div class="auth-chip">☁️ Cloud Sync</div>
+          <div class="auth-chip">🔥 Streaks</div>
+          <div class="auth-chip">🧠 Focus Timer</div>
+          <div class="auth-chip">📓 Journal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING SCREEN -->
+  <div class="onboarding-screen" id="onboardingScreen">
+    <div class="onb-wrap">
+      <div class="onb-card">
+        <div class="onb-head">
+          <div class="onb-brand">LifeFlow</div>
+          <button class="secondary" style="min-height:38px;padding:0 12px" onclick="skipOnboarding()">Skip</button>
+        </div>
+        <div class="onb-track" id="onbTrack"></div>
+        <div id="onbSlides"></div>
+        <button class="onb-cta" id="onbCta" onclick="nextSlide()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app hidden" id="appShell">
+    <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+    <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+
+    <aside class="drawer" id="drawer">
+      <div class="user-card glass">
+        <div class="avatar" id="drawerAvatar">LF</div>
+        <div style="min-width:0">
+          <div style="font-weight:900" id="drawerName">Friend</div>
+          <div class="small" id="drawerEmail">Synced to your account</div>
+        </div>
+      </div>
+      <button class="drawer-item active" data-nav="home" onclick="nav('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+      <button class="drawer-item" data-nav="journal" onclick="nav('journal')"><i class="fa-solid fa-book-open"></i><span>Journal</span></button>
+      <button class="drawer-item" data-nav="focus" onclick="nav('focus')"><i class="fa-solid fa-stopwatch"></i><span>Focus</span></button>
+      <button class="drawer-item" data-nav="analytics" onclick="nav('analytics')"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></button>
+      <button class="drawer-item" data-nav="goals" onclick="nav('goals')"><i class="fa-solid fa-bullseye"></i><span>Goals</span><span class="badge">New</span></button>
+      <button class="drawer-item" data-nav="achievements" onclick="nav('achievements')"><i class="fa-solid fa-trophy"></i><span>Achievements</span></button>
+      <button class="drawer-item" data-nav="settings" onclick="nav('settings')"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+      <div class="divider"></div>
+      <button class="drawer-item" onclick="openSheet('habit')"><i class="fa-solid fa-circle-plus"></i><span>Add habit</span></button>
+      <button class="drawer-item" onclick="openSheet('task')"><i class="fa-solid fa-list-check"></i><span>Add task</span></button>
+      <button class="drawer-item" onclick="openSheet('goal')"><i class="fa-solid fa-bullseye"></i><span>Add goal</span></button>
+      <div class="divider"></div>
+      <button class="drawer-item" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button>
+    </aside>
+
+    <div class="topbar">
+      <button class="icon-btn hot" onclick="openDrawer()"><i class="fa-solid fa-bars"></i></button>
+      <div>
+        <div class="title" id="topTitle">LifeFlow</div>
+        <div class="subtitle" id="topSubtitle">Build unbreakable momentum.</div>
+      </div>
+      <button class="icon-btn" onclick="openSheet('task')"><i class="fa-solid fa-plus"></i></button>
+      <div class="sync-pill" title="Cloud sync status">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncText">Saved locally</span>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="screen active" id="homeScreen">
+      <div class="content">
+        <div class="hero-card">
+          <div class="eyebrow" id="greetingText">Welcome back</div>
+          <div class="hero-title">One small win at a time.</div>
+          <p class="micro" id="heroText">Your habits, tasks, focus sessions, and reflections stay in sync across devices.</p>
+        </div>
+        <div class="summary-row">
+          <div class="summary glass">
+            <div class="eyebrow">Today</div>
+            <div class="stat" id="todayStat">0</div>
+            <div class="micro">habits completed</div>
+            <div class="progress-ring" id="progressRing"><span id="progressText">0%</span></div>
+          </div>
+          <div class="summary glass">
+            <div class="eyebrow">Streak</div>
+            <div class="stat" id="streakStat">0</div>
+            <div class="micro">day momentum</div>
+          </div>
+          <div class="summary glass">
+            <div class="eyebrow">Focus</div>
+            <div class="stat" id="focusStat">0</div>
+            <div class="micro">minutes today</div>
+          </div>
+          <div class="summary glass">
+            <div class="eyebrow">Goals</div>
+            <div class="stat" id="goalStat">0</div>
+            <div class="micro">active goals</div>
+          </div>
+        </div>
+        <div class="section-title">Quick actions</div>
+        <div class="actions">
+          <button class="action glass" onclick="openSheet('habit')">
+            <div class="action-icon"><i class="fa-solid fa-seedling"></i></div><span>Habit</span>
+          </button>
+          <button class="action glass" onclick="openSheet('journal')">
+            <div class="action-icon"><i class="fa-solid fa-pen-nib"></i></div><span>Journal</span>
+          </button>
+          <button class="action glass" onclick="nav('focus')">
+            <div class="action-icon"><i class="fa-solid fa-fire"></i></div><span>Focus</span>
+          </button>
+        </div>
+        <div class="section-title">Habits</div>
+        <div id="habitsList" class="list"></div>
+        <div class="section-title">Tasks</div>
+        <div id="tasksList" class="list"></div>
+        <div class="section-title">Categories</div>
+        <div class="chip-row" id="categoryRow"></div>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="screen" id="journalScreen">
+      <div class="content">
+        <div class="hero-card">
+          <div class="eyebrow">Journal</div>
+          <div class="hero-title">How are you feeling today?</div>
+          <p class="micro">Write a line or two. Tiny reflections compound fast.</p>
+        </div>
+        <div class="gap"></div>
+        <div class="section-card">
+          <div class="moods" id="moodRow"></div>
+          <div class="gap"></div>
+          <button class="primary" style="width:100%" onclick="openSheet('journal')">New entry</button>
+        </div>
+        <div class="section-title">Recent entries</div>
+        <div id="journalList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- FOCUS -->
+    <div class="screen" id="focusScreen">
+      <div class="content">
+        <div class="timer-box">
+          <div class="eyebrow">Focus</div>
+          <div class="timer-time" id="timerDisplay">25:00</div>
+          <div class="timer-mode" id="timerModeRow"></div>
+          <div class="row" style="margin-top:14px">
+            <button class="secondary" id="timerPlay" style="flex:1" onclick="toggleTimer()"><i class="fa-solid fa-play"></i> Start</button>
+            <button class="secondary" style="flex:1" onclick="resetTimer()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+          </div>
+          <div class="gap"></div>
+          <div class="row small"><span>Sound</span><span id="soundLabel">Rain</span></div>
+          <div class="audio-grid" id="audioGrid"></div>
+          <input type="file" id="customAudioInput" accept="audio/*" style="display:none" onchange="handleCustomAudio(event)">
+        </div>
+        <div class="section-title">Recent focus sessions</div>
+        <div id="focusList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="screen" id="analyticsScreen">
+      <div class="content">
+        <div class="hero-card">
+          <div class="eyebrow">Analytics</div>
+          <div class="hero-title">See the pattern, then improve it.</div>
+          <p class="micro">Your heatmap and focus history update automatically.</p>
+        </div>
+        <div class="summary-row">
+          <div class="summary glass"><div class="eyebrow">Habits</div><div class="stat" id="anaHabits">0</div><div class="micro">tracked</div></div>
+          <div class="summary glass"><div class="eyebrow">Journal</div><div class="stat" id="anaJournal">0</div><div class="micro">entries</div></div>
+          <div class="summary glass"><div class="eyebrow">Sessions</div><div class="stat" id="anaFocus">0</div><div class="micro">focus logs</div></div>
+          <div class="summary glass"><div class="eyebrow">Goals</div><div class="stat" id="anaGoals">0</div><div class="micro">in progress</div></div>
+        </div>
+        <div class="section-card">
+          <div class="row"><div class="section-title" style="margin:0">Activity Heatmap</div><span class="small">Last 42 days</span></div>
+          <div style="height:10px"></div>
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+        <div class="section-title">Focus history</div>
+        <div id="focusHistory" class="list"></div>
+      </div>
+    </div>
+
+    <!-- GOALS -->
+    <div class="screen" id="goalsScreen">
+      <div class="content">
+        <div class="hero-card">
+          <div class="eyebrow">Goals</div>
+          <div class="hero-title">Build outcomes, not just tasks.</div>
+          <p class="micro">Set targets with milestones and keep the momentum visible.</p>
+        </div>
+        <div class="gap"></div>
+        <button class="primary" style="width:100%" onclick="openSheet('goal')">Add goal</button>
+        <div class="section-title">Your goals</div>
+        <div id="goalsList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div class="screen" id="achievementsScreen">
+      <div class="content">
+        <div class="hero-card">
+          <div class="eyebrow">Achievements</div>
+          <div class="hero-title">Wins that stick.</div>
+          <p class="micro">Unlock badges by using the app consistently.</p>
+        </div>
+        <div class="section-title">Badge wall</div>
+        <div id="achievementsGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="settingsScreen">
+      <div class="content">
+        <div class="hero-card">
+          <div class="eyebrow">Settings</div>
+          <div class="hero-title" id="profileName">Friend</div>
+          <p class="micro" id="profileEmail">Synced to your account</p>
+        </div>
+
+        <div class="section-title">Account</div>
+        <div class="section-card">
+          <div class="row"><span class="small">Sync</span><span class="sync-pill"><span class="sync-dot synced"></span><span id="accountSync">Cloud Synced ☁️</span></span></div>
+          <div class="gap"></div>
+          <div class="row"><span class="small">Email</span><span class="small" id="profileEmail2">—</span></div>
+          <div class="gap"></div>
+          <div class="row"><span class="small">Name</span><span class="small" id="profileName2">—</span></div>
+        </div>
+
+        <div class="section-title">Appearance</div>
+        <div class="section-card">
+          <div class="small" style="margin-bottom:10px">Theme</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="mode-pill active" onclick="setTheme('dark')">🌙 Dark</button>
+            <button class="mode-pill" onclick="setTheme('light')">☀️ Light</button>
+            <button class="mode-pill" onclick="setTheme('system')">⚙️ System</button>
+          </div>
+        </div>
+
+        <div class="section-title">Focus Sound</div>
+        <div class="section-card">
+          <div class="audio-grid" id="soundSettings"></div>
+        </div>
+
+        <div class="section-title">Data</div>
+        <div class="section-card" style="display:grid;gap:10px">
+          <button class="secondary" style="justify-content:flex-start;padding:0 16px;display:flex;align-items:center;gap:10px" onclick="exportJSON()">
+            <span>📦</span><span>Export all data as JSON</span>
+          </button>
+          <button class="secondary" style="justify-content:flex-start;padding:0 16px;display:flex;align-items:center;gap:10px" onclick="importJSONPrompt()">
+            <span>📂</span><span>Import JSON</span>
+          </button>
+          <button class="secondary" style="justify-content:flex-start;padding:0 16px;display:flex;align-items:center;gap:10px" onclick="exportCSV()" id="exportCsvBtn">
+            <span>📊</span><span>Export CSV</span><span class="pro-badge" id="csvProBadge">PRO</span>
+          </button>
+        </div>
+
+        <div class="section-title">Premium</div>
+        <div class="section-card" id="proStatusCard">
+          <!-- Rendered by renderProStatus() -->
+        </div>
+
+        <div class="section-title">About</div>
+        <div class="section-card">
+          <div class="row"><span class="small">Version</span><span class="small">1.0.0</span></div>
+          <div class="gap"></div>
+          <div class="row"><a href="#" class="small" style="color:var(--primary-bright)">Privacy Policy</a></div>
+          <div class="gap"></div>
+          <div class="row"><a href="#" class="small" style="color:var(--primary-bright)">Terms of Service</a></div>
+        </div>
+
+        <div class="section-title" style="color:var(--coral)">Danger Zone</div>
+        <div style="display:grid;gap:10px">
+          <button class="danger" onclick="clearAllData()">🗑️ Clear All Local Data</button>
+          <button class="danger" style="width:100%" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+        </div>
+
+        <!-- Dev mode toggle — hidden but accessible for testing -->
+        <div style="margin-top:32px;text-align:center">
+          <button class="secondary" style="min-height:34px;padding:0 14px;font-size:11px;opacity:.28;font-family:monospace" onclick="devSetPro()">
+            dev: toggle pro
+          </button>
+        </div>
+        <div style="height:24px"></div>
+      </div>
+    </div>
+
+    <button class="fab" onclick="openSheet('habit')"><i class="fa-solid fa-plus"></i></button>
+
+    <nav class="bottom-nav">
+      <button class="tab active" data-nav="home" onclick="nav('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+      <button class="tab" data-nav="journal" onclick="nav('journal')"><i class="fa-solid fa-book-open"></i><span>Journal</span></button>
+      <button class="tab" data-nav="focus" onclick="nav('focus')"><i class="fa-solid fa-stopwatch"></i><span>Focus</span></button>
+      <button class="tab" data-nav="analytics" onclick="nav('analytics')"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></button>
+      <button class="tab" data-nav="settings" onclick="nav('settings')"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+    </nav>
+
+    <div class="sheet" id="sheet">
+      <div class="grab"></div>
+      <div class="sheet-head">
+        <button class="icon-btn" onclick="closeSheet()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="sheet-title" id="sheetTitle">Add</div>
+        <button class="secondary" style="min-height:38px;padding:0 12px" onclick="closeSheet()">Done</button>
+      </div>
+      <div class="sheet-body" id="sheetBody"></div>
+    </div>
+  </div>
+
+  <!-- UPGRADE / PAYMENT MODAL -->
+  <div class="upgrade-backdrop" id="upgradeBackdrop" onclick="closeUpgradeModal()"></div>
+  <div class="upgrade-modal" id="upgradeModal">
+    <div class="grab"></div>
+    <div class="upgrade-head">
+      <button class="icon-btn" onclick="closeUpgradeModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="sheet-title">LifeFlow Pro ✨</div>
+    </div>
+    <div class="upgrade-body">
+      <div class="upgrade-hero">
+        <div class="upgrade-hero-icon">⚡</div>
+        <div class="upgrade-hero-title">Unlock Everything</div>
+        <div class="upgrade-hero-sub">Unlimited habits, goals, full analytics, and priority support.</div>
+      </div>
+      <div class="upgrade-features">
+        <div class="upgrade-feat">✅ Unlimited habits</div>
+        <div class="upgrade-feat">✅ Unlimited journal</div>
+        <div class="upgrade-feat">✅ Goals & milestones</div>
+        <div class="upgrade-feat">✅ 30-day analytics</div>
+        <div class="upgrade-feat">✅ CSV data export</div>
+        <div class="upgrade-feat">✅ Priority support</div>
+      </div>
+      <div class="plans">
+        <div class="plan-card" onclick="openPlan('monthly')">
+          <div class="plan-label">Monthly</div>
+          <div class="plan-price">$4.99</div>
+          <div class="plan-period">per month</div>
+          <button class="plan-cta">Get Monthly</button>
+        </div>
+        <div class="plan-card plan-featured" onclick="openPlan('yearly')">
+          <div class="plan-badge">Best Value</div>
+          <div class="plan-label">Yearly</div>
+          <div class="plan-price">$2.99</div>
+          <div class="plan-period">per month<br>billed $35 / yr</div>
+          <button class="plan-cta">Get Yearly</button>
+        </div>
+        <div class="plan-card" onclick="openPlan('lifetime')">
+          <div class="plan-label">Lifetime</div>
+          <div class="plan-price">$49</div>
+          <div class="plan-period">one-time<br>own it forever</div>
+          <button class="plan-cta">Buy Once</button>
+        </div>
+      </div>
+      <div class="upgrade-guarantee">
+        🔒 Secure payment by Lemon Squeezy · 30-day money-back guarantee<br>
+        After payment, Pro unlocks on your next app load.
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ── SUPABASE ─────────────────────────────────────────────── */
+    const SUPA_URL = 'https://xahbsrfpgqlryzxdsezk.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhaGJzcmZwZ3Fscnl6eGRzZXprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMjYyNDgsImV4cCI6MjA5MzkwMjI0OH0.TKnQ97FAWJV4YQkr_NiKspVFD7VUyxHPgDOYnqdiSZM';
+    const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+    /* ── CONSTANTS ────────────────────────────────────────────── */
+    const MOODS = ['🙂 Good','😊 Great','😌 Calm','😮‍💨 Tired','😟 Low','🔥 Driven'];
+    const TIMER_MODES = [
+      { key:'pomodoro',  label:'Pomodoro',  seconds:25*60 },
+      { key:'countdown', label:'Countdown', seconds:15*60 },
+      { key:'stopwatch', label:'Stopwatch', seconds:0 }
+    ];
+    const AUDIO_PRESETS = [
+      { key:'rain',   label:'Rain',   emoji:'🌧️', url:'https://raw.githubusercontent.com/bradtraversy/ambient-sound-mixer/main/audio/rain.mp3' },
+      { key:'waves',  label:'Waves',  emoji:'🌊', url:'https://raw.githubusercontent.com/bradtraversy/ambient-sound-mixer/main/audio/ocean.mp3' },
+      { key:'forest', label:'Forest', emoji:'🌲', url:'https://raw.githubusercontent.com/bradtraversy/ambient-sound-mixer/main/audio/night.mp3' },
+      { key:'fire',   label:'Fire',   emoji:'🔥', url:'https://raw.githubusercontent.com/bradtraversy/ambient-sound-mixer/main/audio/fireplace.mp3' },
+      { key:'birds',  label:'Birds',  emoji:'🐦', url:'https://raw.githubusercontent.com/bradtraversy/ambient-sound-mixer/main/audio/birds.mp3' },
+      { key:'custom', label:'Custom', emoji:'📂', url:'' }
+    ];
+    const ACHIEVEMENTS = [
+      { key:'first_habit',   icon:'🌱', title:'First Seed',          desc:'Created your first habit',         check:s=>s.habits.length>=1 },
+      { key:'first_task',    icon:'✅', title:'Task Master',         desc:'Completed your first task',        check:s=>s.tasks.some(t=>t.completed) },
+      { key:'first_journal', icon:'📖', title:'Inner Voice',         desc:'Wrote your first journal entry',   check:s=>s.journal.length>=1 },
+      { key:'streak_3',      icon:'🔥', title:'Warming Up',          desc:'3-day streak',                     check:s=>s.profile.current_streak>=3 },
+      { key:'streak_7',      icon:'⚡', title:'Week Warrior',        desc:'7-day streak',                     check:s=>s.profile.current_streak>=7 },
+      { key:'streak_21',     icon:'🏆', title:'Habit Former',        desc:'21-day streak',                    check:s=>s.profile.current_streak>=21 },
+      { key:'streak_66',     icon:'💎', title:'Locked In',           desc:'66-day streak',                    check:s=>s.profile.current_streak>=66 },
+      { key:'focus_60',      icon:'🧠', title:'Deep Worker',         desc:'60 mins total focus',              check:s=>s.profile.total_focus_minutes>=60 },
+      { key:'focus_500',     icon:'🚀', title:'Flow State',          desc:'500 mins total focus',             check:s=>s.profile.total_focus_minutes>=500 },
+      { key:'habits_5',      icon:'🌟', title:'Habit Stack',         desc:'Tracking 5+ habits',               check:s=>s.habits.length>=5 },
+      { key:'tasks_10',      icon:'📋', title:'Getting Things Done', desc:'10 tasks completed',               check:s=>s.tasks.filter(t=>t.completed).length>=10 },
+      { key:'journal_7',     icon:'✍️', title:'Reflector',          desc:'7 journal entries',                check:s=>s.journal.length>=7 },
+      { key:'perfect_day',   icon:'🌈', title:'Perfect Day',         desc:'All habits done in one day',       check:s=>checkPerfectDay(s) },
+      { key:'early_bird',    icon:'🌅', title:'Early Bird',          desc:'Focus session before 7 AM',        check:s=>checkEarlyBird(s) },
+      { key:'night_owl',     icon:'🦉', title:'Night Owl',           desc:'Focus session after 9 PM',         check:s=>checkNightOwl(s) },
+      { key:'goal_setter',   icon:'🎯', title:'Goal Setter',         desc:'Created your first goal',          check:s=>s.goals.length>=1 },
+    ];
+    const PLANS = {
+      monthly:  { url:'https://rewriteminds.lemonsqueezy.com/buy/monthly' },
+      yearly:   { url:'https://rewriteminds.lemonsqueezy.com/buy/yearly' },
+      lifetime: { url:'https://rewriteminds.lemonsqueezy.com/buy/lifetime' }
+    };
+
+    /* ── AUDIO PLAYER ─────────────────────────────────────────── */
+    const audioPlayer = new Audio();
+    audioPlayer.loop = true;
+    let customAudioUrl = '';
+
+    /* ── STATE ────────────────────────────────────────────────── */
+    const state = {
+      user: null,
+      profile: {
+        name:'Friend', onboarding_done:false, theme_mode:'system',
+        focus_sound:'rain', current_streak:0, total_focus_minutes:0,
+        is_pro: false  // BUG FIX: was missing from initial state
+      },
+      habits:[], tasks:[], journal:[], focus:[], goals:[], achievements:[],
+      activeNav:'home', sheet:null, authTab:'login', onboardingIndex:0,
+      timer:{ mode:'pomodoro', running:false, seconds:25*60, handle:null },
+      sound:'rain', sync:'local',
+      categories:[
+        {name:'Health',color:'#7B5EA7'},
+        {name:'Study', color:'#2DD4A0'},
+        {name:'Work',  color:'#F0C040'},
+        {name:'Life',  color:'#FF6B6B'}
+      ]
+    };
+
+    /* ── UTILITIES ────────────────────────────────────────────── */
+    const $  = s => document.querySelector(s);
+    const today  = () => new Date().toISOString().slice(0,10);
+    const uid    = () => crypto.randomUUID();
+    const toDay  = d => new Date(d).toISOString().slice(0,10);
+    const fmtDate = d => new Date(d).toLocaleDateString([], {month:'short',day:'numeric'});
+    const fmtTime = d => new Date(d).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    const clamp  = (n,mn,mx) => Math.max(mn,Math.min(mx,n));
+
+    function escapeHtml(str){
+      return String(str ?? '').replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+
+    function toast(msg){
+      const el = $('#toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=>el.classList.remove('show'), 2600);
+    }
+
+    function setSync(mode){
+      state.sync = mode;
+      const map = {local:'Saved locally',syncing:'Syncing…',synced:'Cloud Synced ☁️',error:'Sync error'};
+      $('#syncDot').className = 'sync-dot' + (mode==='synced'?' synced':mode==='syncing'?' syncing':'');
+      $('#syncText').textContent = map[mode] || 'Saved locally';
+      const as = $('#accountSync');
+      if (as) as.textContent = map[mode] || 'Saved locally';
+    }
+
+    /* ── THEME ────────────────────────────────────────────────── */
+    function applyTheme(mode){
+      mode = mode || state.profile.theme_mode || 'dark';
+      const sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      const eff = mode === 'system' ? sys : mode;
+      document.documentElement.dataset.theme = eff;
+      document.body.dataset.theme = eff;
+      const mc = document.getElementById('metaThemeColor');
+      if (mc) mc.setAttribute('content', eff === 'light' ? '#F5F3EE' : '#07070F');
+      // BUG FIX: cache theme to localStorage to prevent flash on reload
+      try { localStorage.setItem('lf_theme', mode); } catch(e){}
+      document.querySelectorAll('.mode-pill').forEach(btn => {
+        // Match button text (strip emoji prefix)
+        const txt = btn.textContent.trim().replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}⚙️☀️🌙]\s*/u,'').toLowerCase();
+        btn.classList.toggle('active', txt === mode);
+      });
+    }
+
+    const _tmq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+    if (_tmq) {
+      const _tl = () => { if (state.profile?.theme_mode === 'system') applyTheme('system'); };
+      _tmq.addEventListener ? _tmq.addEventListener('change', _tl) : _tmq.addListener(_tl);
+    }
+
+    /* ── AUTH ─────────────────────────────────────────────────── */
+    function setAuthTab(tab){
+      state.authTab = tab;
+      $('#loginTab').classList.toggle('active', tab==='login');
+      $('#signupTab').classList.toggle('active', tab==='signup');
+      $('#nameField').style.display = tab==='signup'?'block':'none';
+      $('#authBtn').textContent = tab==='login'?'Sign In':'Create Account';
+      $('#passwordInput').placeholder = tab==='login'?'Min. 6 characters':'Create a strong password';
+      $('#passwordInput').setAttribute('autocomplete', tab==='login'?'current-password':'new-password');
+      hideAuthError();
+    }
+
+    function showAuthError(msg){ const e=$('#authError'); e.textContent=msg; e.style.display='block'; }
+    function hideAuthError(){ $('#authError').style.display='none'; }
+    function authToast(msg){ toast(msg); }
+
+    async function submitAuth(){
+      const email    = $('#emailInput').value.trim();
+      const password = $('#passwordInput').value;
+      const name     = $('#nameInput').value.trim() || email.split('@')[0] || 'Friend';
+      hideAuthError();
+      if (!email || !email.includes('@')) return showAuthError('Please enter a valid email address.');
+      if (password.length < 6) return showAuthError('Password must be at least 6 characters.');
+      try {
+        if (state.authTab === 'login'){
+          const {data,error} = await supa.auth.signInWithPassword({email,password});
+          if (error) throw error;
+          if (data?.session?.user) await bootUser(data.session.user);
+        } else {
+          const {data,error} = await supa.auth.signUp({email,password,options:{data:{full_name:name}}});
+          if (error) throw error;
+          if (data?.user) {
+            await bootUser(data.user);
+          } else {
+            showAuthError('Check your email to confirm your account, then sign in.');
+          }
+        }
+      } catch(err){ showAuthError(err.message||'Authentication failed.'); }
+    }
+
+    async function signOut(){
+      if (!confirm('Sign out of LifeFlow?')) return;
+      pauseTimer();
+      await supa.auth.signOut();
+      state.user = null;
+      $('#appShell').classList.add('hidden');
+      $('#authScreen').classList.add('open');
+      setAuthTab('login');
+      toast('Signed out.');
+    }
+
+    let _booting = false;
+    async function bootUser(user){
+      if (_booting) return;   // prevent double-call from onAuthStateChange + getSession
+      _booting = true;
+      try {
+        state.user = user;
+        $('#authScreen').classList.remove('open');
+        $('#appShell').classList.remove('hidden');
+        setSync('syncing');
+        await loadProfile();
+        await loadAllData();
+        applyTheme(state.profile.theme_mode);
+        initOnboarding();
+        maybeShowOnboarding();
+        renderAll();
+        setSync('synced');
+      } finally {
+        _booting = false;
+      }
+    }
+
+    /* ── PROFILE ──────────────────────────────────────────────── */
+    async function loadProfile(){
+      const fallback = state.user?.user_metadata?.full_name || state.user?.email?.split('@')[0] || 'Friend';
+      state.profile = {name:fallback, onboarding_done:false, theme_mode:'system', focus_sound:'rain', current_streak:0, total_focus_minutes:0, is_pro:false};
+      try {
+        const {data,error} = await supa.from('profiles').select('*').eq('id',state.user.id).maybeSingle();
+        if (error && error.code !== 'PGRST116') throw error;
+        if (data) {
+          state.profile = {
+            name:              data.name || fallback,
+            onboarding_done:   !!data.onboarding_done,
+            theme_mode:        data.theme_mode || 'system',
+            focus_sound:       data.focus_sound || 'rain',
+            current_streak:    data.current_streak || 0,
+            total_focus_minutes: data.total_focus_minutes || 0,
+            is_pro:            !!data.is_pro  // BUG FIX: was never loaded
+          };
+        }
+      } catch(e){ console.warn('loadProfile', e); }
+      state.sound = state.profile.focus_sound || 'rain';
+      _syncProfileUI();
+      // Save profile once to ensure all new columns exist
+      await saveProfile();
+    }
+
+    function _syncProfileUI(){
+      const name = state.profile.name || 'Friend';
+      const email = state.user?.email || '';
+      if ($('#drawerName'))   $('#drawerName').textContent   = name;
+      if ($('#drawerEmail'))  $('#drawerEmail').textContent  = email;
+      if ($('#drawerAvatar')) $('#drawerAvatar').textContent = name.slice(0,2).toUpperCase();
+      if ($('#profileName'))  $('#profileName').textContent  = name;
+      if ($('#profileName2')) $('#profileName2').textContent = name;
+      if ($('#profileEmail')) $('#profileEmail').textContent = `Synced · ${email}`;
+      if ($('#profileEmail2'))$('#profileEmail2').textContent= email;
+      if ($('#greetingText')) $('#greetingText').textContent = `Welcome, ${name}`;
+    }
+
+    async function saveProfile(){
+      if (!state.user) return;
+      const payload = {
+        id:     state.user.id,
+        email:  state.user.email,
+        name:   state.profile.name || 'Friend',
+        onboarding_done: !!state.profile.onboarding_done,
+        theme_mode:  state.profile.theme_mode || 'system',
+        focus_sound: state.profile.focus_sound || 'rain',
+        current_streak: state.profile.current_streak || 0,
+        total_focus_minutes: state.profile.total_focus_minutes || 0,
+        is_pro: !!state.profile.is_pro   // BUG FIX: was hardcoded false — nuked Pro on every save!
+      };
+      try { await supa.from('profiles').upsert(payload, {onConflict:'id'}); }
+      catch(e){ console.warn('saveProfile', e); }
+    }
+
+    /* ── DATA LOADING ─────────────────────────────────────────── */
+    async function loadAllData(){
+      if (!state.user) return;
+      setSync('syncing');
+      try {
+        const [h,c,t,j,f,g,a] = await Promise.all([
+          supa.from('habits').select('*').eq('user_id',state.user.id).order('created_at',{ascending:true}),
+          supa.from('completions').select('*').eq('user_id',state.user.id),
+          supa.from('tasks').select('*').eq('user_id',state.user.id).order('created_at',{ascending:false}),
+          supa.from('journal_entries').select('*').eq('user_id',state.user.id).order('date',{ascending:false}),
+          supa.from('focus_sessions').select('*').eq('user_id',state.user.id).order('started_at',{ascending:false}),
+          supa.from('goals').select('*').eq('user_id',state.user.id).order('created_at',{ascending:false}),
+          supa.from('achievements').select('*').eq('user_id',state.user.id)
+        ]);
+        if (h.error) throw h.error;
+        state.habits = (h.data||[]).map(r=>({...r,completions:[]}));
+        const comps = c.data||[];
+        state.habits.forEach(habit=>{
+          habit.completions = comps.filter(x=>x.habit_id===habit.id).map(x=>x.completed_date);
+        });
+        state.tasks       = t.data||[];
+        state.journal     = j.data||[];
+        state.focus       = f.data||[];
+        state.goals       = g.data||[];
+        state.achievements= (a.data||[]).map(x=>x.key);
+        recalcDerived();
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){
+        console.error('loadAllData:', e);
+        setSync('error');
+        toast('Sync error — working offline');
+      }
+    }
+
+    function recalcDerived(){
+      const completedDays = new Set();
+      state.habits.forEach(h=>h.completions.forEach(d=>completedDays.add(d)));
+      let streak = 0, cur = new Date();
+      while(completedDays.has(toDay(cur))){ streak++; cur.setDate(cur.getDate()-1); }
+      state.profile.current_streak = streak;
+      state.profile.total_focus_minutes = Math.round(
+        state.focus.filter(s=>s.completed).reduce((sum,s)=>sum+(s.duration_seconds||0),0)/60
+      );
+    }
+
+    /* ── ACHIEVEMENT CHECKS ───────────────────────────────────── */
+    function checkPerfectDay(s){ const d=today(); return s.habits.length>0&&s.habits.every(h=>h.completions.includes(d)); }
+    function checkEarlyBird(s){ return s.focus.some(f=>f.started_at&&new Date(f.started_at).getHours()<7); }
+    function checkNightOwl(s){ return s.focus.some(f=>f.started_at&&new Date(f.started_at).getHours()>=21); }
+
+    async function checkAchievements(){
+      if (!state.user) return;
+      const unlocked = new Set(state.achievements);
+      for (const ach of ACHIEVEMENTS){
+        if (unlocked.has(ach.key)) continue;
+        let ok = false;
+        try { ok = !!ach.check(state); } catch(e){}
+        if (ok){
+          unlocked.add(ach.key);
+          state.achievements.push(ach.key);
+          try {
+            await supa.from('achievements').upsert({
+              user_id:ach.user_id||state.user.id,
+              key:ach.key, unlocked_at:new Date().toISOString()
+            }, {onConflict:'user_id,key'});
+            toast(`🏅 Unlocked: ${ach.title}`);
+          } catch(e){ console.warn('achievement',e); }
+        }
+      }
+      await saveProfile();
+    }
+
+    /* ── PRO GATING ───────────────────────────────────────────── */
+    const FREE_HABIT_LIMIT   = 3;
+    const FREE_JOURNAL_LIMIT = 30;
+
+    function isPro(){ return !!state.profile.is_pro; }
+
+    /* ── UPGRADE MODAL ────────────────────────────────────────── */
+    function showUpgradeModal(source){
+      $('#upgradeModal').classList.add('open');
+      $('#upgradeBackdrop').classList.add('open');
+    }
+    function closeUpgradeModal(){
+      $('#upgradeModal').classList.remove('open');
+      $('#upgradeBackdrop').classList.remove('open');
+    }
+    function openPlan(key){
+      const plan = PLANS[key];
+      if (!plan) return;
+      window.open(plan.url, '_blank', 'noopener');
+      toast('Opening secure checkout…');
+    }
+
+    /* ── NAV ──────────────────────────────────────────────────── */
+    function nav(name){
+      state.activeNav = name;
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.nav===name));
+      document.querySelectorAll('.drawer-item[data-nav]').forEach(t=>t.classList.toggle('active', t.dataset.nav===name));
+      const map = {
+        home:'homeScreen', journal:'journalScreen', focus:'focusScreen',
+        analytics:'analyticsScreen', goals:'goalsScreen',
+        achievements:'achievementsScreen', settings:'settingsScreen'
+      };
+      const el = $('#'+map[name]);
+      if (el) el.classList.add('active');
+      const titles = {
+        home:['LifeFlow','Build unbreakable momentum.'],
+        journal:['Journal','Reflect, reset, repeat.'],
+        focus:['Focus','Go deep for a while.'],
+        analytics:['Analytics','See the pattern.'],
+        goals:['Goals','Design the future.'],
+        achievements:['Achievements','Collect the wins.'],
+        settings:['Settings','Tune your flow.']
+      };
+      const t = titles[name] || ['LifeFlow',''];
+      $('#topTitle').textContent    = t[0];
+      $('#topSubtitle').textContent = t[1];
+      closeDrawer();
+      renderAll();
+    }
+
+    function openDrawer(){ $('#drawer').classList.add('open'); $('#drawerBackdrop').classList.add('open'); }
+    function closeDrawer(){ $('#drawer').classList.remove('open'); $('#drawerBackdrop').classList.remove('open'); }
+
+    /* ── SHEETS ───────────────────────────────────────────────── */
+    function openSheet(type, payload=null){
+      state.sheet = {type, payload};
+      const titleMap = {habit:'Add habit',task:'Add task',journal:'Write journal',goal:'Add goal'};
+      $('#sheetTitle').textContent = titleMap[type]||'Add';
+      $('#sheetBody').innerHTML = sheetMarkup(type, payload);
+      $('#sheet').classList.add('open');
+      $('#sheetBackdrop').classList.add('open');
+      bindSheetEvents(type, payload);
+    }
+    function closeSheet(){ $('#sheet').classList.remove('open'); $('#sheetBackdrop').classList.remove('open'); state.sheet=null; }
+
+    function sheetMarkup(type, payload){
+      if (type==='habit') return `
+        <form class="form" id="habitForm">
+          <div><label class="auth-lbl">Habit name</label><input id="habitName" placeholder="Read 20 pages" value="${escapeHtml(payload?.name||'')}"></div>
+          <div class="two">
+            <div><label class="auth-lbl">Category</label><input id="habitCategory" placeholder="Study" value="${escapeHtml(payload?.category||'Study')}"></div>
+            <div><label class="auth-lbl">Icon</label><input id="habitIcon" placeholder="🎯" value="${escapeHtml(payload?.icon||'🎯')}"></div>
+          </div>
+          <div class="two">
+            <div><label class="auth-lbl">Goal</label><input id="habitGoal" type="number" min="1" placeholder="1" value="${payload?.goal||1}"></div>
+            <div><label class="auth-lbl">Frequency</label><select id="habitFrequency"><option ${payload?.frequency==='daily'?'selected':''}>daily</option><option ${payload?.frequency==='weekly'?'selected':''}>weekly</option></select></div>
+          </div>
+          <div class="save-row"><button class="secondary" type="button" onclick="closeSheet()">Cancel</button><button class="primary" type="submit">Save habit</button></div>
+        </form>`;
+      if (type==='task') return `
+        <form class="form" id="taskForm">
+          <div><label class="auth-lbl">Title</label><input id="taskTitle" placeholder="Finish assignment" value="${escapeHtml(payload?.title||'')}"></div>
+          <div class="two">
+            <div><label class="auth-lbl">Category</label><input id="taskCategory" placeholder="Work" value="${escapeHtml(payload?.category||'Life')}"></div>
+            <div><label class="auth-lbl">Priority</label><select id="taskPriority"><option>low</option><option selected>medium</option><option>high</option></select></div>
+          </div>
+          <div><label class="auth-lbl">Due date</label><input id="taskDue" type="date" value="${payload?.due_date||today()}"></div>
+          <div class="save-row"><button class="secondary" type="button" onclick="closeSheet()">Cancel</button><button class="primary" type="submit">Save task</button></div>
+        </form>`;
+      if (type==='journal') return `
+        <form class="form" id="journalForm">
+          <div><label class="auth-lbl">Mood</label><select id="journalMood">${MOODS.map(m=>`<option${payload?.mood===m?' selected':''}>${m}</option>`).join('')}</select></div>
+          <div><label class="auth-lbl">Title</label><input id="journalTitle" placeholder="Today's reflection" value="${escapeHtml(payload?.title||'')}"></div>
+          <div><label class="auth-lbl">Entry</label><textarea id="journalBody" placeholder="What happened today?">${escapeHtml(payload?.body||'')}</textarea></div>
+          <div class="save-row"><button class="secondary" type="button" onclick="closeSheet()">Cancel</button><button class="primary" type="submit">Save entry</button></div>
+        </form>`;
+      if (type==='goal') return `
+        <form class="form" id="goalForm">
+          <div><label class="auth-lbl">Goal title</label><input id="goalTitle" placeholder="Launch my first product" value="${escapeHtml(payload?.title||'')}"></div>
+          <div><label class="auth-lbl">Description</label><textarea id="goalDesc" placeholder="What does success look like?">${escapeHtml(payload?.description||'')}</textarea></div>
+          <div class="two">
+            <div><label class="auth-lbl">Target date</label><input id="goalTarget" type="date" value="${payload?.target_date||today()}"></div>
+            <div><label class="auth-lbl">Category</label><input id="goalCategory" placeholder="Business" value="${escapeHtml(payload?.category||'Business')}"></div>
+          </div>
+          <div class="save-row"><button class="secondary" type="button" onclick="closeSheet()">Cancel</button><button class="primary" type="submit">Save goal</button></div>
+        </form>`;
+      return '';
+    }
+
+    function bindSheetEvents(type){
+      const forms = {habit:'#habitForm',task:'#taskForm',journal:'#journalForm',goal:'#goalForm'};
+      const form = $(forms[type]);
+      if (!form) return;
+      form.addEventListener('submit', async e=>{
+        e.preventDefault();
+        if (type==='habit')   await addHabit();
+        if (type==='task')    await addTask();
+        if (type==='journal') await addJournal();
+        if (type==='goal')    await addGoal();
+        closeSheet();
+        renderAll();
+      }, {once:true});
+    }
+
+    /* ── CRUD OPERATIONS ──────────────────────────────────────── */
+    async function addHabit(){
+      // BUG FIX: Pro gate — free plan limited to 3 habits
+      if (!isPro() && state.habits.length >= FREE_HABIT_LIMIT){
+        showUpgradeModal('habits');
+        toast(`Free plan: max ${FREE_HABIT_LIMIT} habits. Upgrade to Pro!`);
+        return;
+      }
+      const habit = {
+        id:uid(), user_id:state.user.id,
+        name:$('#habitName').value.trim(),
+        category:$('#habitCategory').value.trim()||'Life',
+        icon:$('#habitIcon').value.trim()||'🎯',
+        frequency:$('#habitFrequency').value,
+        goal:Number($('#habitGoal').value||1),
+        created_at:new Date().toISOString(),
+        completions:[]
+      };
+      if (!habit.name) return toast('Add a habit name.');
+      state.habits.unshift(habit);
+      renderAll();
+      try {
+        await supa.from('habits').insert({
+          id:habit.id, user_id:habit.user_id, name:habit.name, icon:habit.icon,
+          category:habit.category, category_color:'#7B5EA7',
+          frequency:habit.frequency, goal:habit.goal, created_at:habit.created_at
+        });
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function toggleHabit(habitId){
+      const habit = state.habits.find(h=>h.id===habitId);
+      if (!habit) return;
+      const d = today();
+      const has = habit.completions.includes(d);
+      habit.completions = has ? habit.completions.filter(x=>x!==d) : [...habit.completions, d];
+      if (navigator.vibrate) navigator.vibrate(8);
+      renderAll();
+      try {
+        if (has){
+          await supa.from('completions').delete().eq('habit_id',habitId).eq('user_id',state.user.id).eq('completed_date',d);
+        } else {
+          await supa.from('completions').upsert({habit_id:habitId,user_id:state.user.id,completed_date:d},{onConflict:'habit_id,completed_date'});
+        }
+        recalcDerived();
+        await checkAchievements();
+        await saveProfile();
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function deleteHabit(habitId){
+      if (!confirm('Delete this habit?')) return;
+      state.habits = state.habits.filter(h=>h.id!==habitId);
+      renderAll();
+      try {
+        await supa.from('completions').delete().eq('habit_id',habitId).eq('user_id',state.user.id);
+        await supa.from('habits').delete().eq('id',habitId).eq('user_id',state.user.id);
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function addTask(){
+      const task = {
+        id:uid(), user_id:state.user.id,
+        title:$('#taskTitle').value.trim(),
+        category:$('#taskCategory').value.trim()||'Life',
+        priority:$('#taskPriority').value,
+        due_date:$('#taskDue').value ? new Date($('#taskDue').value).toISOString() : null,
+        recurring:false, completed:false,
+        created_at:new Date().toISOString()
+      };
+      if (!task.title) return toast('Add a task title.');
+      state.tasks.unshift(task);
+      renderAll();
+      try {
+        await supa.from('tasks').insert(task);
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function toggleTask(taskId){
+      const task = state.tasks.find(t=>t.id===taskId);
+      if (!task) return;
+      task.completed = !task.completed;
+      task.completed_at = task.completed ? new Date().toISOString() : null;
+      renderAll();
+      try {
+        await supa.from('tasks').update({completed:task.completed,completed_at:task.completed_at}).eq('id',task.id).eq('user_id',state.user.id);
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function addJournal(){
+      // Journal limit for free users
+      if (!isPro() && state.journal.length >= FREE_JOURNAL_LIMIT){
+        showUpgradeModal('journal');
+        toast(`Free plan: max ${FREE_JOURNAL_LIMIT} entries. Upgrade to Pro!`);
+        return;
+      }
+      const entry = {
+        id:uid(), user_id:state.user.id,
+        title:$('#journalTitle').value.trim(),
+        body:$('#journalBody').value.trim(),
+        mood:$('#journalMood').value,
+        date:today(), created_at:new Date().toISOString()
+      };
+      if (!entry.body) return toast('Write something first.');
+      state.journal.unshift(entry);
+      renderAll();
+      try {
+        await supa.from('journal_entries').insert(entry);
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function addGoal(){
+      const goal = {
+        id:uid(), user_id:state.user.id,
+        title:$('#goalTitle').value.trim(),
+        description:$('#goalDesc').value.trim(),
+        target_date:$('#goalTarget').value||null,
+        category:$('#goalCategory').value.trim()||'Business',
+        progress:0, completed:false,
+        created_at:new Date().toISOString()
+      };
+      if (!goal.title) return toast('Add a goal title.');
+      state.goals.unshift(goal);
+      renderAll();
+      try {
+        await supa.from('goals').insert(goal);
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){ console.warn(e); setSync('error'); }
+    }
+
+    async function bumpGoal(id, delta){
+      const goal = state.goals.find(g=>g.id===id);
+      if (!goal) return;
+      goal.progress = clamp((goal.progress||0)+delta, 0, 100);
+      goal.completed = goal.progress >= 100;
+      renderAll();
+      try {
+        await supa.from('goals').update({progress:goal.progress,completed:goal.completed}).eq('id',id).eq('user_id',state.user.id);
+        await checkAchievements();
+        setSync('synced');
+      } catch(e){ console.warn(e); }
+    }
+
+    /* ── SETTINGS ACTIONS ─────────────────────────────────────── */
+    async function setTheme(mode){
+      state.profile.theme_mode = mode;
+      applyTheme(mode);
+      await saveProfile();
+      renderAll();
+      toast(`Theme: ${mode}`);
+    }
+
+    function exportJSON(){
+      const data = {
+        exported_at: new Date().toISOString(),
+        habits: state.habits.map(({completions, ...h})=>h),
+        tasks: state.tasks,
+        journal: state.journal,
+        goals: state.goals,
+        focus: state.focus
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `lifeflow-export-${today()}.json`;
+      a.click(); URL.revokeObjectURL(url);
+      toast('Data exported!');
+    }
+
+    function importJSONPrompt(){
+      toast('Import: paste your JSON in the console for now. Full UI coming soon.');
+    }
+
+    function exportCSV(){
+      if (!isPro()){ showUpgradeModal('csv'); return; }
+      const rows = [['Date','Habit','Done']];
+      state.habits.forEach(h=>{
+        h.completions.forEach(d=>rows.push([d, h.name, 'Yes']));
+      });
+      const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `lifeflow-habits-${today()}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+      toast('CSV exported!');
+    }
+
+    function clearAllData(){
+      if (!confirm('Clear all local data? Your Supabase cloud data stays safe.')) return;
+      state.habits=[]; state.tasks=[]; state.journal=[]; state.focus=[]; state.goals=[]; state.achievements=[];
+      renderAll();
+      toast('Local data cleared. Reload to re-sync from cloud.');
+    }
+
+    // Hidden dev function to test Pro features
+    async function devSetPro(){
+      const newVal = !state.profile.is_pro;
+      state.profile.is_pro = newVal;
+      await saveProfile();
+      renderAll();
+      toast(newVal ? 'Dev: Pro enabled ✅' : 'Dev: Pro disabled');
+    }
+
+    /* ── RENDER FUNCTIONS ─────────────────────────────────────── */
+    function renderHabits(){
+      const el = $('#habitsList');
+      if (!state.habits.length){
+        el.innerHTML = `<div class="section-card"><div class="small">No habits yet</div><div class="gap"></div><button class="primary" style="width:100%" onclick="openSheet('habit')">Create your first habit</button></div>`;
+        return;
+      }
+      const d = today();
+      el.innerHTML = state.habits.map(h=>{
+        const done = h.completions.includes(d);
+        return `
+          <div class="item">
+            <button class="check ${done?'done':''}" onclick="toggleHabit('${h.id}')">${done?'<i class="fa-solid fa-check"></i>':''}</button>
+            <div>
+              <div class="item-title ${done?'done-text':''}">${escapeHtml(h.icon||'🎯')} ${escapeHtml(h.name)}</div>
+              <div class="meta">
+                <span class="pill">${escapeHtml(h.category||'Life')}</span>
+                <span class="pill">${escapeHtml(h.frequency||'daily')}</span>
+                <span class="pill">${h.goal||1} goal</span>
+              </div>
+            </div>
+            <button class="icon-btn" onclick="deleteHabit('${h.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>`;
+      }).join('');
+    }
+
+    function renderTasks(){
+      const el = $('#tasksList');
+      const items = state.tasks.slice(0,5);
+      if (!items.length){ el.innerHTML=`<div class="section-card"><div class="small">No tasks yet</div></div>`; return; }
+      el.innerHTML = items.map(t=>`
+        <div class="item">
+          <button class="check ${t.completed?'done':''}" onclick="toggleTask('${t.id}')">${t.completed?'<i class="fa-solid fa-check"></i>':''}</button>
+          <div>
+            <div class="item-title ${t.completed?'done-text':''}">${escapeHtml(t.title)}</div>
+            <div class="meta">
+              <span class="pill">${escapeHtml(t.category||'Life')}</span>
+              <span class="pill">${escapeHtml(t.priority||'medium')}</span>
+              ${t.due_date?`<span class="pill">${fmtDate(t.due_date)}</span>`:''}
+            </div>
+          </div>
+          <span class="small">${t.completed?'Done':'Open'}</span>
+        </div>`).join('');
+    }
+
+    function renderCategories(){
+      const row = $('#categoryRow');
+      row.innerHTML = state.categories.map(c=>`<div class="chip"><span class="dot" style="background:${c.color}"></span>${escapeHtml(c.name)}</div>`).join('');
+    }
+
+    function renderMoodRow(){
+      const mr = $('#moodRow');
+      if (!mr) return;
+      mr.innerHTML = MOODS.map(m=>`<button class="mood ${m===state._mood?'active':''}" onclick="state._mood='${m.replace(/'/g,"\\'")}'"; renderMoodRow();">${m}</button>`).join('');
+    }
+
+    function renderJournal(){
+      const el = $('#journalList');
+      if (!state.journal.length){ el.innerHTML=`<div class="section-card"><div class="small">No journal entries yet</div></div>`; return; }
+      el.innerHTML = state.journal.slice(0,12).map(j=>`
+        <div class="item">
+          <div class="check done"><i class="fa-solid fa-pen-nib"></i></div>
+          <div>
+            <div class="item-title">${escapeHtml(j.title||j.mood||'Journal')}</div>
+            <div class="meta"><span class="pill">${escapeHtml(j.mood||'Mood')}</span><span class="pill">${fmtDate(j.date||j.created_at)}</span></div>
+            <div class="micro" style="margin-top:8px">${escapeHtml((j.body||'').slice(0,140))}</div>
+          </div>
+          <button class="icon-btn" title="Copy" onclick="navigator.clipboard.writeText(${JSON.stringify(j.body||'')}).then(()=>toast('Copied'))"><i class="fa-solid fa-copy"></i></button>
+        </div>`).join('');
+    }
+
+    function renderGoals(){
+      const el = $('#goalsList');
+      if (!state.goals.length){
+        el.innerHTML=`<div class="section-card"><div class="small">No goals yet</div><div class="gap"></div><button class="primary" style="width:100%" onclick="openSheet('goal')">Add goal</button></div>`;
+        return;
+      }
+      el.innerHTML = state.goals.map(g=>{
+        const daysLeft = g.target_date ? Math.ceil((new Date(g.target_date)-new Date())/(1000*60*60*24)) : null;
+        const daysLabel = daysLeft===null?'':(daysLeft<0?'Overdue':`${daysLeft}d left`);
+        return `
+          <div class="item" style="grid-template-columns:1fr auto">
+            <div>
+              <div class="item-title">${escapeHtml(g.title)}</div>
+              <div class="meta">
+                <span class="pill">${escapeHtml(g.category||'Business')}</span>
+                ${daysLabel?`<span class="pill" style="${daysLeft<0?'color:var(--coral)':''}">${daysLabel}</span>`:''}
+              </div>
+              <div class="gap" style="height:8px"></div>
+              <div style="height:8px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden">
+                <div style="width:${clamp(g.progress||0,0,100)}%;height:100%;background:linear-gradient(90deg,var(--primary-bright),var(--emerald));transition:width .3s ease"></div>
+              </div>
+              <div class="row small" style="margin-top:6px"><span>${g.progress||0}%</span><span style="color:${g.completed?'var(--emerald)':'var(--muted)'}">${g.completed?'✅ Completed':'In progress'}</span></div>
+            </div>
+            <div style="display:grid;gap:6px;margin-left:8px">
+              <button class="secondary" style="min-height:34px;padding:0 10px" onclick="bumpGoal('${g.id}',10)">+10%</button>
+              <button class="secondary" style="min-height:34px;padding:0 10px" onclick="bumpGoal('${g.id}',-10)">−10%</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderAchievements(){
+      const grid = $('#achievementsGrid');
+      const unlocked = new Set(state.achievements);
+      grid.innerHTML = ACHIEVEMENTS.map(a=>{
+        const is = unlocked.has(a.key);
+        return `
+          <div class="section-card" style="text-align:left;opacity:${is?1:.5};${is?'box-shadow:0 0 22px var(--primary-glow)':''}">
+            <div style="font-size:28px;${!is?'filter:grayscale(1)':''}">${a.icon}</div>
+            <div class="gap" style="height:8px"></div>
+            <div style="font-weight:900">${is?escapeHtml(a.title):'???'}</div>
+            <div class="small">${is?escapeHtml(a.desc):'Keep going...'}</div>
+            <div class="gap" style="height:8px"></div>
+            <div class="pill" style="background:${is?'rgba(45,212,160,.12)':'rgba(255,255,255,.04)'};color:${is?'var(--emerald)':'var(--muted)'}">${is?'✅ Unlocked':'Locked'}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderFocus(){
+      const sl = $('#soundLabel'); if (sl) sl.textContent = AUDIO_PRESETS.find(x=>x.key===state.sound)?.label||'Rain';
+      const td = $('#timerDisplay'); if (td) td.textContent = formatTimer(state.timer.seconds, state.timer.mode);
+      const tp = $('#timerPlay'); if (tp) tp.innerHTML = state.timer.running?'<i class="fa-solid fa-pause"></i> Pause':'<i class="fa-solid fa-play"></i> Start';
+      const tmr = $('#timerModeRow');
+      if (tmr) tmr.innerHTML = TIMER_MODES.map(m=>`<button class="mode-pill ${m.key===state.timer.mode?'active':''}" onclick="setTimerMode('${m.key}')">${m.label}</button>`).join('');
+      const audioBtns = AUDIO_PRESETS.map(a=>`<button class="audio-btn ${a.key===state.sound?'active':''}" onclick="setSound('${a.key}')"><div style="font-size:22px">${a.emoji}</div><div style="font-weight:900;margin-top:8px">${a.label}</div></button>`).join('');
+      const ag = $('#audioGrid'); if (ag) ag.innerHTML = audioBtns;
+      const ss = $('#soundSettings'); if (ss) ss.innerHTML = audioBtns;
+      const list = $('#focusList');
+      if (list) {
+        if (!state.focus.length){
+          list.innerHTML = `<div class="section-card"><div class="small">No focus sessions yet</div></div>`;
+        } else {
+          list.innerHTML = state.focus.slice(0,6).map(f=>`
+            <div class="item">
+              <div class="check done"><i class="fa-solid fa-bolt"></i></div>
+              <div>
+                <div class="item-title">${escapeHtml(f.mode||'focus')} · ${Math.round((f.duration_seconds||0)/60)}m</div>
+                <div class="meta"><span class="pill">${f.completed?'Completed':'Saved'}</span><span class="pill">${fmtDate(f.started_at||f.created_at)}</span></div>
+              </div>
+              <span class="small">${f.ended_at?fmtTime(f.ended_at):''}</span>
+            </div>`).join('');
+        }
+      }
+      const fh = $('#focusHistory');
+      if (fh) fh.innerHTML = (list?.innerHTML || '');
+    }
+
+    function renderAnalytics(){
+      const an = s => { const el=document.getElementById(s); if (el) return el; return {textContent:''}; };
+      an('anaHabits').textContent = String(state.habits.length);
+      an('anaJournal').textContent= String(state.journal.length);
+      an('anaFocus').textContent  = String(state.focus.length);
+      an('anaGoals').textContent  = String(state.goals.length);
+      const hm = $('#heatmap');
+      if (hm) {
+        const days = [];
+        for (let i=41;i>=0;i--){
+          const d = new Date(); d.setDate(d.getDate()-i);
+          const iso = toDay(d);
+          const count = state.habits.reduce((s,h)=>s+(h.completions.includes(iso)?1:0),0)
+            + state.focus.filter(f=>f.completed&&f.started_at&&toDay(f.started_at)===iso).length;
+          const level = count===0?0:count===1?1:count===2?2:count===3?3:4;
+          days.push(`<div class="heat level-${level}" title="${iso} · ${count} actions"></div>`);
+        }
+        hm.innerHTML = days.join('');
+      }
+    }
+
+    function renderHome(){
+      const done = state.habits.filter(h=>h.completions.includes(today())).length;
+      const ts = $('#todayStat');   if(ts) ts.textContent = String(done);
+      const pt = $('#progressText'); if(pt) pt.textContent = state.habits.length?`${Math.round((done/state.habits.length)*100)}%`:'0%';
+      const pr = $('#progressRing'); if(pr) pr.style.setProperty('--pct',`${state.habits.length?(done/state.habits.length)*100:0}%`);
+      const str = $('#streakStat'); if(str) str.textContent = String(state.profile.current_streak||0);
+      const foc = $('#focusStat');
+      if(foc) foc.textContent = String(Math.round(
+        state.focus.filter(f=>f.completed&&f.started_at&&toDay(f.started_at)===today()).reduce((a,b)=>a+(b.duration_seconds||0),0)/60
+      ));
+      const gs = $('#goalStat'); if(gs) gs.textContent = String(state.goals.filter(g=>!g.completed).length);
+      renderHabits();
+      renderTasks();
+      renderCategories();
+    }
+
+    function renderProStatus(){
+      const card = $('#proStatusCard');
+      if (!card) return;
+      const pro = isPro();
+      card.innerHTML = pro ? `
+        <div class="row" style="align-items:flex-start">
+          <div>
+            <div style="font-weight:900;color:var(--gold);margin-bottom:4px">⚡ LifeFlow Pro Active</div>
+            <div class="small">All features unlocked. Thank you!</div>
+          </div>
+          <a href="https://rewriteminds.lemonsqueezy.com" target="_blank" rel="noopener" class="secondary" style="min-height:36px;padding:0 12px;display:inline-flex;align-items:center;border-radius:10px;font-size:12px;font-weight:900;text-decoration:none;flex-shrink:0">Manage →</a>
+        </div>` : `
+        <div>
+          <div class="row" style="margin-bottom:10px">
+            <div>
+              <div style="font-weight:900;margin-bottom:4px">Free Plan</div>
+              <div class="small">Max ${FREE_HABIT_LIMIT} habits · Max ${FREE_JOURNAL_LIMIT} journal entries</div>
+            </div>
+          </div>
+          <button class="primary" style="width:100%" onclick="showUpgradeModal('settings')">✨ Upgrade to Pro</button>
+        </div>`;
+      // CSV export button gating
+      const csvBadge = $('#csvProBadge');
+      if (csvBadge) csvBadge.style.display = pro ? 'none' : '';
+    }
+
+    function renderAll(){
+      if (!state.user) return;
+      renderHome();
+      renderMoodRow();
+      renderJournal();
+      renderFocus();
+      renderAnalytics();
+      renderGoals();
+      renderAchievements();
+      renderProStatus();
+      _syncProfileUI();
+      const titles = {
+        home:'LifeFlow',journal:'Journal',focus:'Focus',analytics:'Analytics',
+        goals:'Goals',achievements:'Achievements',settings:'Settings'
+      };
+      const subs = {
+        home:'Build unbreakable momentum.',journal:'Reflect, reset, repeat.',focus:'Go deep for a while.',
+        analytics:'See the pattern.',goals:'Design the future.',achievements:'Collect the wins.',settings:'Tune your flow.'
+      };
+      const tEl = $('#topTitle'); if(tEl) tEl.textContent = titles[state.activeNav]||'LifeFlow';
+      const sEl = $('#topSubtitle'); if(sEl) sEl.textContent = subs[state.activeNav]||'';
+      // Re-apply theme pill active states
+      document.querySelectorAll('.mode-pill').forEach(btn=>{
+        const txt = btn.textContent.trim().replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}⚙️☀️🌙]\s*/u,'').toLowerCase();
+        btn.classList.toggle('active', txt === (state.profile.theme_mode||'dark'));
+      });
+    }
+
+    /* ── TIMER ────────────────────────────────────────────────── */
+    function formatTimer(sec, mode){
+      if (mode==='stopwatch'){ const m=Math.floor(sec/60),s=sec%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+      const m=Math.floor(sec/60),s=sec%60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function setTimerMode(mode){
+      state.timer.mode = mode;
+      if (mode!=='stopwatch' && !state.timer.running) state.timer.seconds = TIMER_MODES.find(m=>m.key===mode).seconds;
+      if (mode==='stopwatch' && !state.timer.running) state.timer.seconds = 0;
+      renderFocus();
+    }
+
+    function toggleTimer(){ state.timer.running ? pauseTimer() : startTimer(); }
+
+    function startTimer(){
+      if (state.timer.handle) clearInterval(state.timer.handle);
+      if (!state.timer.running && state.timer.mode!=='stopwatch' && state.timer.seconds<=0){
+        state.timer.seconds = TIMER_MODES.find(m=>m.key===state.timer.mode).seconds;
+      }
+      state.timer.running = true;
+      updateAudioSource();
+      if (audioPlayer.src && audioPlayer.src !== window.location.href) audioPlayer.play().catch(e=>console.warn('Audio play failed:', e));
+      state.timer.handle = setInterval(()=>{
+        if (state.timer.mode==='stopwatch'){
+          state.timer.seconds += 1;
+        } else {
+          state.timer.seconds -= 1;
+          if (state.timer.seconds <= 0) { finishTimer(); return; }
+        }
+        renderFocus();
+      }, 1000);
+      renderFocus();
+    }
+
+    function pauseTimer(){
+      state.timer.running = false;
+      if (state.timer.handle) clearInterval(state.timer.handle);
+      state.timer.handle = null;
+      audioPlayer.pause();
+      renderFocus();
+    }
+
+    function resetTimer(){
+      pauseTimer();
+      const preset = TIMER_MODES.find(m=>m.key===state.timer.mode);
+      state.timer.seconds = preset ? preset.seconds : 0;
+      renderFocus();
+    }
+
+    async function finishTimer(){
+      pauseTimer();
+      const mode = state.timer.mode;
+      const preset = TIMER_MODES.find(m=>m.key===mode);
+      let minutes = mode==='stopwatch' ? Math.max(1, Math.round(state.timer.seconds/60)) : Math.round(preset.seconds/60);
+      const now = new Date();
+      const session = {
+        id:uid(), user_id:state.user.id, mode,
+        duration_seconds:minutes*60, completed:true,
+        started_at:new Date(now-minutes*60000).toISOString(),
+        ended_at:now.toISOString()
+      };
+      state.focus.unshift(session);
+      state.profile.total_focus_minutes = (state.profile.total_focus_minutes||0)+minutes;
+      await saveProfile();
+      try { await supa.from('focus_sessions').insert(session); } catch(e){ console.warn(e); }
+      await checkAchievements();
+      renderAll();
+      toast(`✅ Focus session saved: ${minutes} min`);
+      if (mode!=='stopwatch' && preset) state.timer.seconds = preset.seconds;
+    }
+
+    function setSound(key){
+      if (key === 'custom') {
+        const fileInput = document.getElementById('customAudioInput');
+        if (fileInput) fileInput.click();
+        return; // wait for file selection
+      }
+      state.sound = key;
+      state.profile.focus_sound = key;
+      saveProfile();
+      renderFocus();
+      toast(`${AUDIO_PRESETS.find(x=>x.key===key)?.label||key} selected`);
+      updateAudioSource();
+    }
+
+    function handleCustomAudio(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (customAudioUrl) URL.revokeObjectURL(customAudioUrl);
+      customAudioUrl = URL.createObjectURL(file);
+      const customPreset = AUDIO_PRESETS.find(p => p.key === 'custom');
+      if (customPreset) customPreset.url = customAudioUrl;
+      state.sound = 'custom';
+      state.profile.focus_sound = 'custom';
+      saveProfile();
+      renderFocus();
+      toast(`Custom sound loaded: ${file.name}`);
+      updateAudioSource();
+    }
+
+    function updateAudioSource() {
+      const preset = AUDIO_PRESETS.find(p => p.key === state.sound);
+      if (preset && preset.url) {
+        audioPlayer.src = preset.url;
+        if (state.timer.running) audioPlayer.play().catch(e => console.warn('Audio play failed:', e));
+      } else {
+        audioPlayer.pause();
+      }
+    }
+
+    /* ── ONBOARDING ───────────────────────────────────────────── */
+    function initOnboarding(){
+      const slides = [
+        {title:'Welcome to LifeFlow', text:'A calm command center for habits, focus, and reflection.', emoji:'✨'},
+        {title:'Build Unbreakable Habits', text:'Track streaks, complete habits, and keep the momentum moving.', emoji:'🌱'},
+        {title:'Stay Focused & Reflect', text:'Pomodoro, ambient audio, journaling, and analytics in one place.', emoji:'🧠'},
+        {title:'Deep Work, On Demand', text:'Switch into flow with a timer, sound, and a clean screen.', emoji:'🎧'},
+        {title:'Start My Journey →', text:'You are ready. Jump in and build the next version of you.', emoji:'🚀', cta:true}
+      ];
+      state.onboardingIndex = 0;
+      const track = $('#onbTrack');
+      const slidesEl = $('#onbSlides');
+      if (!track||!slidesEl) return;
+      track.innerHTML = slides.map((_,i)=>`<div class="onb-dot ${i===0?'active':''}"></div>`).join('');
+      slidesEl.innerHTML = slides.map((s,i)=>`
+        <div class="onb-slide ${i===0?'active':''}" data-slide="${i}">
+          <div class="onb-art"><div style="font-size:64px">${s.emoji}</div></div>
+          <div class="eyebrow">Step ${i+1}/5</div>
+          <h2 class="onb-title">${s.title}</h2>
+          <p class="onb-text">${s.text}</p>
+        </div>`).join('');
+      updateOnboardingUI();
+    }
+
+    function updateOnboardingUI(){
+      const slides = Array.from(document.querySelectorAll('.onb-slide'));
+      if (!slides.length) return;
+      slides.forEach((s,i)=>s.classList.toggle('active', i===state.onboardingIndex));
+      document.querySelectorAll('#onbTrack .onb-dot').forEach((d,i)=>d.classList.toggle('active', i===state.onboardingIndex));
+      const cta = $('#onbCta');
+      if (cta) cta.textContent = state.onboardingIndex===4 ? 'Start My Journey →' : 'Next';
+    }
+
+    async function nextSlide(){
+      if (state.onboardingIndex < 4){ state.onboardingIndex++; updateOnboardingUI(); return; }
+      state.profile.onboarding_done = true;
+      await saveProfile();
+      $('#onboardingScreen').classList.remove('open');
+      toast('Welcome aboard 🎉');
+    }
+
+    async function skipOnboarding(){
+      state.profile.onboarding_done = true;
+      await saveProfile();
+      $('#onboardingScreen').classList.remove('open');
+    }
+
+    function maybeShowOnboarding(){
+      const os = $('#onboardingScreen');
+      if (!state.profile.onboarding_done) os.classList.add('open');
+      else os.classList.remove('open');
+    }
+
+    /* ── INIT ─────────────────────────────────────────────────── */
+    async function init(){
+      setSync('local');
+      setAuthTab('login');
+
+      // Step 1: check existing session immediately (reads localStorage — no network needed)
+      try {
+        const { data:{ session } } = await supa.auth.getSession();
+        if (session?.user) await bootUser(session.user);
+      } catch(e){ console.warn('getSession:', e); }
+
+      // Step 2: only listen for new sign-ins and sign-outs — not token refreshes
+      supa.auth.onAuthStateChange(async (event, session)=>{
+        if (event === 'SIGNED_IN' && session?.user){
+          await bootUser(session.user);
+        } else if (event === 'SIGNED_OUT'){
+          state.user = null;
+          _booting = false;
+          $('#appShell').classList.add('hidden');
+          $('#authScreen').classList.add('open');
+        }
+      });
+    }
+
+    /* ── EVENT LISTENERS ──────────────────────────────────────── */
+    document.addEventListener('keydown', e=>{
+      if (e.key==='Escape'){ closeDrawer(); closeSheet(); closeUpgradeModal(); }
+    });
+
+    let touchX = 0;
+    const obs = document.getElementById('onboardingScreen');
+    obs.addEventListener('touchstart', e=>{ touchX=e.touches[0].clientX; }, {passive:true});
+    obs.addEventListener('touchend', e=>{
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx)>40){
+        if (dx<0 && state.onboardingIndex<4){ state.onboardingIndex++; updateOnboardingUI(); }
+        if (dx>0 && state.onboardingIndex>0){ state.onboardingIndex--; updateOnboardingUI(); }
+      }
+    }, {passive:true});
+
+    ['emailInput','passwordInput','nameInput'].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', e=>{ if (e.key==='Enter') submitAuth(); });
+    });
+
+    Object.assign(window, {
+      setAuthTab, submitAuth, signOut, authToast,
+      openDrawer, closeDrawer, nav,
+      openSheet, closeSheet,
+      toggleHabit, toggleTask, deleteHabit,
+      addHabit, addTask, addJournal, addGoal, bumpGoal,
+      setTheme, setSound, handleCustomAudio, setTimerMode,
+      toggleTimer, resetTimer,
+      nextSlide, skipOnboarding,
+      showUpgradeModal, closeUpgradeModal, openPlan,
+      exportJSON, importJSONPrompt, exportCSV, clearAllData,
+      devSetPro, state, audioPlayer
+    });
+
+    init();
+  </script>
+</body>
+</html>
