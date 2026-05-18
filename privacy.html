@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy – LifeFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070F;
+      --surface: #10101E;
+      --surface2: #181828;
+      --primary: #7B5EA7;
+      --primary-bright: #9D7FD4;
+      --text: #EEEEF5;
+      --muted: #7A7A99;
+      --border: rgba(255,255,255,.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(ellipse at 20% 10%, rgba(123,94,167,.18) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 90%, rgba(45,212,160,.07) 0%, transparent 40%);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 18px 24px;
+      background: rgba(7,7,15,.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #7B5EA7, #2DD4A0);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 16px; color: #07070F;
+    }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; font-size: 18px; }
+    header span { color: var(--muted); font-size: 14px; margin-left: auto; }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(123,94,167,.18);
+      border: 1px solid rgba(123,94,167,.35);
+      color: var(--primary-bright);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: clamp(32px, 6vw, 48px);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin: 40px 0 12px;
+      color: var(--text);
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--primary-bright);
+      margin-right: 10px;
+      vertical-align: middle;
+      margin-bottom: 2px;
+    }
+    p { color: #C0C0D8; margin-bottom: 14px; font-size: 15px; }
+    ul { padding-left: 20px; margin-bottom: 14px; }
+    ul li { color: #C0C0D8; font-size: 15px; margin-bottom: 6px; }
+    a { color: var(--primary-bright); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 32px 0;
+    }
+    .card p { margin: 0; }
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--primary-bright); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">L</div>
+    <a href="/">LifeFlow</a>
+    <span>Legal</span>
+  </header>
+
+  <main>
+    <div class="badge">Legal</div>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: May 2025 &nbsp;·&nbsp; Effective immediately</p>
+
+    <div class="card">
+      <p>LifeFlow is built with your privacy in mind. We collect only what's necessary to run the app, and we never sell your data to anyone.</p>
+    </div>
+
+    <h2>Information We Collect</h2>
+    <p>When you use LifeFlow, we may collect the following:</p>
+    <ul>
+      <li><strong>Account information</strong> — your name and email address when you sign up or sign in with Google.</li>
+      <li><strong>App data</strong> — habits, tasks, journal entries, and goals you create within LifeFlow.</li>
+      <li><strong>Usage data</strong> — basic analytics such as feature usage and session duration to help us improve the app.</li>
+      <li><strong>Device information</strong> — browser type, operating system, and device type for compatibility purposes.</li>
+    </ul>
+
+    <h2>How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul>
+      <li>Provide, maintain, and improve LifeFlow's features and functionality.</li>
+      <li>Sync your data securely across devices.</li>
+      <li>Send important service-related communications (no spam).</li>
+      <li>Respond to your support requests.</li>
+    </ul>
+
+    <h2>Google Sign-In</h2>
+    <p>LifeFlow offers sign-in via Google OAuth. When you use this option, we receive your name and email address from Google. We do not receive your Google password, and we do not access any other Google account data beyond what you explicitly authorize.</p>
+
+    <h2>Data Storage & Security</h2>
+    <p>Your data is stored securely using <strong>Supabase</strong>, a trusted cloud infrastructure provider. We use industry-standard encryption (HTTPS/TLS) for all data in transit. Your app data is stored on servers located in secure data centers.</p>
+
+    <h2>Data Sharing</h2>
+    <p>We do <strong>not</strong> sell, trade, or rent your personal information to third parties. We may share data only with:</p>
+    <ul>
+      <li><strong>Service providers</strong> — such as Supabase (database) and Vercel (hosting), who process data on our behalf under strict confidentiality agreements.</li>
+      <li><strong>Legal requirements</strong> — if required by law or to protect the rights and safety of our users.</li>
+    </ul>
+
+    <h2>Cookies & Local Storage</h2>
+    <p>LifeFlow uses browser local storage to save your preferences (such as theme settings) and to maintain your authentication session. We do not use third-party advertising cookies.</p>
+
+    <h2>Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access the personal data we hold about you.</li>
+      <li>Request deletion of your account and associated data.</li>
+      <li>Export your app data at any time (via the export feature in Settings).</li>
+      <li>Withdraw consent at any time by deleting your account.</li>
+    </ul>
+
+    <h2>Data Retention</h2>
+    <p>We retain your data for as long as your account is active. If you delete your account, your personal data will be removed within 30 days, except where retention is required by law.</p>
+
+    <h2>Children's Privacy</h2>
+    <p>LifeFlow is not intended for users under the age of 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, please contact us immediately.</p>
+
+    <h2>Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We'll notify you of significant changes by posting the new policy on this page with an updated date. Continued use of LifeFlow after changes constitutes acceptance of the updated policy.</p>
+
+    <h2>Contact Us</h2>
+    <p>If you have any questions about this Privacy Policy or how we handle your data, please reach out:</p>
+    <div class="card">
+      <p>📧 <strong>Email:</strong> <a href="mailto:support@rewrite-minds-habit.vercel.app">support@rewrite-minds-habit.vercel.app</a><br/>
+      🌐 <strong>Website:</strong> <a href="https://rewrite-minds-habit.vercel.app">rewrite-minds-habit.vercel.app</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 LifeFlow. All rights reserved. &nbsp;·&nbsp; <a href="/terms">Terms of Service</a> &nbsp;·&nbsp; <a href="/">Back to App</a></p>
+  </footer>
+</body>
+</html>
