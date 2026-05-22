@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy – LifeFlow OS</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070F;
+      --surface: #10101E;
+      --surface2: #181828;
+      --primary: #7B5EA7;
+      --primary-bright: #9D7FD4;
+      --text: #EEEEF5;
+      --muted: #7A7A99;
+      --border: rgba(255,255,255,.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(ellipse at 20% 10%, rgba(123,94,167,.18) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 90%, rgba(45,212,160,.07) 0%, transparent 40%);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 18px 24px;
+      background: rgba(7,7,15,.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #7B5EA7, #2DD4A0);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 16px; color: #07070F;
+    }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; font-size: 18px; }
+    header span { color: var(--muted); font-size: 14px; margin-left: auto; }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(123,94,167,.18);
+      border: 1px solid rgba(123,94,167,.35);
+      color: var(--primary-bright);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: clamp(32px, 6vw, 48px);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin: 40px 0 12px;
+      color: var(--text);
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--primary-bright);
+      margin-right: 10px;
+      vertical-align: middle;
+      margin-bottom: 2px;
+    }
+    p { color: #C0C0D8; margin-bottom: 16px; font-size: 15px; }
+    ul { padding-left: 20px; margin-bottom: 16px; }
+    ul li { color: #C0C0D8; font-size: 15px; margin-bottom: 8px; }
+    a { color: var(--primary-bright); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    
+    .card {
+      background: rgba(123, 94, 167, 0.05);
+      border: 1px solid rgba(123, 94, 167, 0.15);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin: 32px 0;
+    }
+    .card p { margin: 0; color: #E0D5F5; font-size: 16px; font-weight: 500; }
+    
+    .premium-box {
+      background: rgba(45, 212, 160, 0.05);
+      border: 1px solid rgba(45, 212, 160, 0.15);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin: 32px 0;
+    }
+    .premium-box p { margin: 0; color: #D5F5EC; font-size: 15px; }
+    
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--primary-bright); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">L</div>
+    <a href="/">LifeFlow OS</a>
+    <span>Legal</span>
+  </header>
+
+  <main>
+    <div class="badge">Privacy First</div>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: May 2026 &nbsp;·&nbsp; Written for humans, not robots</p>
+
+    <div class="card">
+      <p>✨ Hey there! We built LifeFlow OS to be a secure, serene, and beautiful space to upgrade your daily habits. Your trust is our absolute priority. We collect only what is necessary to sync your progress, and we will never, ever sell your personal data to anyone.</p>
+    </div>
+
+    <h2>1. The Information We Collect (And Why)</h2>
+    <p>We believe in absolute transparency. To run a modern, real-time syncing habit app, we collect just a few essential details:</p>
+    <ul>
+      <li><strong>Account Details:</strong> Your name and email address when you sign up or log in via Google OAuth. This is just to create your unique account profile and send essential updates.</li>
+      <li><strong>Your App Logs:</strong> The habits, tasks, focus sessions, and journal entries you build inside LifeFlow OS. We sync this data so it's always ready for you across all your devices.</li>
+      <li><strong>Aesthetic & Sync Preferences:</strong> Your customized theme selections, display options, and routine layouts so the app looks exactly how you love it every time you log in.</li>
+      <li><strong>Basic App Insights:</strong> Anonymous, high-level usage metrics (like which tab is clicked most) to help us constantly refine the interface and design a better experience for you.</li>
+    </ul>
+
+    <div class="premium-box">
+      <p>💡 **Why we offer premium plans:** We do not host annoying banner ads, pop-ups, or sell user trackers. Because we choose not to monetize you as the product, our optional **LifeFlow Pro** subscriptions directly fund the lightning-fast, highly secure cloud database sync, database backups, and independent design improvements.</p>
+    </div>
+
+    <h2>2. Google Sign-In & Security</h2>
+    <p>Signing in with Google is fast, secure, and fully automated. When you use this option, we receive only your public name and email address from Google to verify who you are. We <strong>never</strong> gain access to your Google password or any other personal files. It's a secure handshake that keeps your credentials perfectly safe.</p>
+
+    <h2>3. Cloud Infrastructure & Safety</h2>
+    <p>Your hard-earned habits and personal notes are treated like gold. We partner with **Supabase**, a globally trusted, industry-leading database and security provider. All connections are encrypted in transit (using robust HTTPS/TLS layers) and fully secured at rest in modern, isolated data centers. Your daily logs are safe and locked down.</p>
+
+    <h2>4. We Never Sell Your Data</h2>
+    <p>This is our solemn promise. We do <strong>not</strong> share, trade, rent, or sell your personal data or habits to third-party ad networks, marketing agencies, or data brokers. The only tools that process your data are our secure cloud infrastructure partners (Supabase and Vercel) which exist solely to host and render your custom dashboard securely.</p>
+
+    <h2>5. Cookies & Local Syncing</h2>
+    <p>LifeFlow OS uses standard browser local storage to instantly save your active preferences (like dark mode and offline edits) and remember your login session. We do not use intrusive third-party trackers or cross-site advertising cookies.</p>
+
+    <h2>6. You Own Your Progress</h2>
+    <p>Your daily routine belongs entirely to you. You have full, absolute control over your data. In your settings dashboard, you can:</p>
+    <ul>
+      <li><strong>Export Data:</strong> Instantly download your full list of habits, tasks, and notes at any time.</li>
+      <li><strong>Delete Account:</strong> Request permanent deletion of your profile and sync records. We completely erase your records from our databases within 30 days of deletion.</li>
+    </ul>
+
+    <h2>7. Keeping This Policy Clean</h2>
+    <p>As we design new visual tools and habit structures for LifeFlow OS, we might occasionally make small adjustments to this page to explain new sync options. If we introduce major changes, we will let you know via a helpful note inside your app settings.</p>
+
+    <h2>8. Talk To Us!</h2>
+    <p>If you have any questions, feedback, or just want to suggest a cool new habit feature, please drop us a friendly line. We are humans and we're always happy to chat!</p>
+    
+    <div class="card" style="background: rgba(45, 212, 160, 0.03); border: 1px solid var(--border);">
+      <p style="color: var(--text); font-size: 15px; font-weight: normal;">
+        📧 <strong>Friendly Support Email:</strong> <a href="mailto:support@rewrite-minds-habit.vercel.app">support@rewrite-minds-habit.vercel.app</a><br/>
+        🌐 <strong>Main Hub:</strong> <a href="https://rewrite-minds-habit.vercel.app" target="_blank">rewrite-minds-habit.vercel.app</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 LifeFlow OS. Crafted under the <a href="https://rewrite-minds-habit.vercel.app" target="_blank">Rewrite Minds</a> brand. All rights reserved. &nbsp;·&nbsp; <a href="/terms">Terms of Service</a> &nbsp;·&nbsp; <a href="/">Back to App</a></p>
+  </footer>
+</body>
+</html>
