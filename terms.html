@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service – LifeFlow OS</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070F;
+      --surface: #10101E;
+      --surface2: #181828;
+      --primary: #7B5EA7;
+      --primary-bright: #9D7FD4;
+      --text: #EEEEF5;
+      --muted: #7A7A99;
+      --border: rgba(255,255,255,.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(ellipse at 80% 10%, rgba(123,94,167,.18) 0%, transparent 50%),
+                  radial-gradient(ellipse at 20% 90%, rgba(240,192,64,.07) 0%, transparent 40%);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 18px 24px;
+      background: rgba(7,7,15,.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #7B5EA7, #2DD4A0);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 16px; color: #07070F;
+    }
+    header a { color: var(--text); text-decoration: none; font-weight: 700; font-size: 18px; }
+    header span { color: var(--muted); font-size: 14px; margin-left: auto; }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(240,192,64,.12);
+      border: 1px solid rgba(240,192,64,.3);
+      color: #F0C040;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: clamp(32px, 6vw, 48px);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin: 40px 0 12px;
+      color: var(--text);
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #F0C040;
+      margin-right: 10px;
+      vertical-align: middle;
+      margin-bottom: 2px;
+    }
+    p { color: #C0C0D8; margin-bottom: 16px; font-size: 15px; }
+    ul { padding-left: 20px; margin-bottom: 16px; }
+    ul li { color: #C0C0D8; font-size: 15px; margin-bottom: 8px; }
+    a { color: var(--primary-bright); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    
+    .card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin: 32px 0;
+    }
+    .card p { margin: 0; }
+    
+    .highlight {
+      background: rgba(240,192,64,.07);
+      border: 1px solid rgba(240,192,64,.2);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin: 32px 0;
+    }
+    .highlight p { margin: 0; color: #E0C060; font-size: 16px; font-weight: 500; }
+    
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--primary-bright); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">L</div>
+    <a href="/">LifeFlow OS</a>
+    <span>Legal</span>
+  </header>
+
+  <main>
+    <div class="badge">Plain English Terms</div>
+    <h1>Terms of Service</h1>
+    <p class="meta">Last updated: May 2026 &nbsp;·&nbsp; Written for real people, not lawyers</p>
+
+    <div class="highlight">
+      <p>👋 Welcome to LifeFlow OS! We're absolutely thrilled to help you design a beautiful, calm, and highly consistent daily routine. By using our app, you're agreeing to these simple, friendly terms. We've written them in plain language so they are easy to read and understand.</p>
+    </div>
+
+    <h2>1. A Warm Hello & Acceptance</h2>
+    <p>By launching or logging into LifeFlow OS ("the App"), you agree to these Terms of Service. If you don't agree with them, that's perfectly okay—but you won't be able to utilize our dashboard features. These terms apply to everyone, from our free-tier explorers to our premium Pro and Lifetime members.</p>
+
+    <h2>2. What We Provide</h2>
+    <p>LifeFlow OS is an aesthetic, unified habit-builder, task logging system, focus timer, and journal platform. The service is hosted by the LifeFlow team under the broader **Rewrite Minds** brand, and we are committed to making it the most reliable and premium habit dashboard on the web.</p>
+
+    <h2>3. Creating Your Account</h2>
+    <p>To secure your data and sync your progress, you can sign in using a Google account or your email. To keep the app amazing for everyone, you agree to:</p>
+    <ul>
+      <li>Keep your Google OAuth or login email secure.</li>
+      <li>Be responsible for the logs created under your profile.</li>
+      <li>Let us know immediately if you notice anything unusual with your account so we can secure it for you.</li>
+    </ul>
+
+    <h2>4. Keeping It Friendly & Respectful</h2>
+    <p>We work incredibly hard to maintain a secure, safe environment. In return, we just ask that you use the app for its intended purpose (leveling up your life!). You agree not to attempt to hack, scrape, crawl, reverse-engineer, or load-spam our syncing servers, or use LifeFlow OS for illegal activities.</p>
+
+    <h2>5. You Own 100% of Your Content</h2>
+    <p>All habits, journals, streaks, and focus metrics you log in LifeFlow OS are completely and unconditionally yours. We hold a limited license to store, format, and display your logs solely to render your personal dashboard and sync it to your devices. We do not claim any ownership over your entries and will never display ads alongside them or sell them to third parties.</p>
+
+    <h2>6. Free Tier vs. Premium Pro Tiers</h2>
+    <p>We want LifeFlow OS to be accessible to everyone. We offer a feature-rich Free Tier, alongside our premium **LifeFlow Pro** plans (Monthly, Yearly, and Lifetime Pass).
+    *   **Pro Features:** Unlocks real-time database sync across limitless devices, premium customization layers, custom routine structures, and priority access to upcoming AI-driven habits.
+    *   **Billing:** Subscriptions are billed simple and clear via **Lemon Squeezy**, our secure merchant partner. 
+    *   **No stress refunds:** We stand behind the value of our product. We offer a generous **14-day refund window** if you feel the app isn't a great fit for you. (See our Refund Policy for the easy steps!).</p>
+
+    <h2>7. Platform Safety & Warranties</h2>
+    <p>While we strive for 100% server uptime and constant stability, we provide the app "as is" and "as available" to remain flexible. We don't guarantee that server glitches will never happen, but we pledge to do our absolute best to resolve any issue rapidly. Please remember: LifeFlow OS is a gamified productivity guide, not a medical or counseling advisory.</p>
+
+    <h2>8. Canceling & Moving On</h2>
+    <p>We'll miss you, but you are free to stop using the app at any time. You can delete your account and erase your database entries in a single click from your in-app settings panel. We also reserve the right to suspend accounts that violate our friendly use rules.</p>
+
+    <h2>9. Changing Our Terms</h2>
+    <p>We are constantly designing and releasing new upgrades for LifeFlow OS. Sometimes, this means updating these terms. When we make a noticeable change, we will update the date at the top of this page and post a friendly update in your app notification tray.</p>
+
+    <h2>10. Let's Chat!</h2>
+    <p>Have questions about these terms or want to know more about the Pro benefits? We are incredibly friendly and love talking with our community:</p>
+    
+    <div class="card" style="background: rgba(123, 94, 167, 0.03); border: 1px solid var(--border);">
+      <p style="color: var(--text); font-size: 15px;">
+        📧 <strong>Direct Support:</strong> <a href="mailto:support@rewrite-minds-habit.vercel.app">support@rewrite-minds-habit.vercel.app</a><br/>
+        🌐 <strong>Main Hub:</strong> <a href="https://rewriteminds.vercel.app" target="_blank">rewriteminds.vercel.app</a><br/>
+        🔒 <strong>Privacy Policy:</strong> <a href="/privacy">rewriteminds.vercel.app/privacy</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 LifeFlow OS. Part of the <a href="https://rewriteminds.vercel.app" target="_blank">Rewrite Minds</a> family. All rights reserved. &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="/">Back to App</a></p>
+  </footer>
+</body>
+</html>
